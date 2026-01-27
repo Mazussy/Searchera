@@ -37,4 +37,8 @@
   --font-poppins-semibold: 'Poppins-SemiBold', sans-serif;
   --font-poppins-medium: 'Poppins-Medium', sans-serif;
   --font-alatsi: 'Alatsi-Regular', sans-serif;
+
+  --color-primary-accent: #D3571F;
+  --color-secondary-accent: #FF9768;
+  --color-primary: #000000
 }
