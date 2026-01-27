@@ -74,7 +74,7 @@ function Navbar() {
           <div className="md:hidden flex-1 flex justify-end">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-900 hover:text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 rounded-lg p-2 relative"
+              className="text-primary hover:text-primary-accent focus:outline-none focus:ring-2 focus:ring-orange-500 rounded-lg p-2 relative"
               aria-label="Toggle menu"
             >
               <div className="w-6 h-6 relative">
@@ -124,31 +124,31 @@ function Navbar() {
           <div className="px-6 py-4 space-y-3">
             <a
               href="/jobs"
-              className="block text-gray-900 hover:text-orange-600 font-medium text-sm py-2 transition-colors duration-200"
+              className="block text-primary hover:text-primary-accent font-medium text-sm py-2 transition-colors duration-200"
             >
               Jobs
             </a>
             <a
               href="/companies"
-              className="block text-gray-900 hover:text-orange-600 font-medium text-sm py-2 transition-colors duration-200"
+              className="block text-primary hover:text-primary-accent font-medium text-sm py-2 transition-colors duration-200"
             >
               Companies
             </a>
             <a
               href="/career-advice"
-              className="block text-gray-900 hover:text-orange-600 font-medium text-sm py-2 transition-colors duration-200"
+              className="block text-primary hover:text-primary-accent font-medium text-sm py-2 transition-colors duration-200"
             >
               Career Advice
             </a>
             <a
               href="/for-employers"
-              className="block text-gray-900 hover:text-orange-600 font-medium text-sm py-2 transition-colors duration-200"
+              className="block text-primary hover:text-primary-accent font-medium text-sm py-2 transition-colors duration-200"
             >
               For Employers
             </a>
             <a
               href="/login"
-              className="flex items-center gap-2 text-gray-900 hover:text-orange-600 font-medium text-sm py-2 transition-colors duration-200"
+              className="flex items-center gap-2 text-primary hover:text-primary-accent font-medium text-sm py-2 transition-colors duration-200"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
