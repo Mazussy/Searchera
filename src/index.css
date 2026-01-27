@@ -25,10 +25,16 @@
   src: url(../src/assets/fonts/Poppins-Medium.ttf);
 }
 
+@font-face {
+  font-family: Alatsi-Regular;
+  src: url(../src/assets/fonts/Alatsi-Regular.ttf);
+}
+
 @theme {
   --font-avro: 'Avro-Regular', sans-serif;
   --font-poppins: 'Poppins-Regular', sans-serif;
   --font-poppins-bold: 'Poppins-Bold', sans-serif;
   --font-poppins-semibold: 'Poppins-SemiBold', sans-serif;
   --font-poppins-medium: 'Poppins-Medium', sans-serif;
+  --font-alatsi: 'Alatsi-Regular', sans-serif;
 }
