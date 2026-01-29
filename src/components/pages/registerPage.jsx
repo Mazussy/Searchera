@@ -118,7 +118,7 @@ const RegisterPage = () => {
         <img
           src="src/assets/images/72be0103c7bc9699eb45bcda9cc0d1c0fd2b75fa.jpg"
           alt="Decorative"
-          className="w-full h-full object-cover object-[center_70%]"
+          className="w-full h-full object-cover object-[center_95%]"
         />
         <div className="absolute inset-0 bg-white/10" />
       </div>
