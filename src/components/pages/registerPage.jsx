@@ -2,13 +2,13 @@ import React from "react";
 
 const RegisterPage = () => {
   return (
-    <div className="register-page h-screen overflow-hidden grid grid-cols-2">
+    <div className="register-page min-h-screen grid grid-cols-1 md:grid-cols-2">
 
       {/* LEFT SECTION */}
-      <div className="register-left relative flex flex-col justify-center items-center px-28 bg-white">
+      <div className="register-left relative flex flex-col justify-center items-center px-8 md:px-28 bg-white py-12 overflow-y-auto">
 
         {/* Logo */}
-        <h1 className="logo absolute top-8 left-28 text-primary-accent tracking-widest font-medium text-xl font-alatsi">
+        <h1 className="logo absolute top-8 left-8 md:left-28 text-primary-accent tracking-widest font-medium text-xl font-alatsi">
           SEARCHERA
         </h1>
 
@@ -114,7 +114,7 @@ const RegisterPage = () => {
       </div>
 
       {/* RIGHT SECTION */}
-      <div className="right-section relative h-screen bg-gray-100">
+      <div className="right-section relative h-screen bg-gray-100 hidden md:block">
         <img
           src="src/assets/images/72be0103c7bc9699eb45bcda9cc0d1c0fd2b75fa.jpg"
           alt="Decorative"
