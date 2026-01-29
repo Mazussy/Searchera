@@ -35,6 +35,11 @@ html, body, #root {
   src: url(../src/assets/fonts/Alatsi-Regular.ttf);
 }
 
+@font-face {
+  font-family: Ponnala-Regular;
+  src: url(../src/assets/fonts/Ponnala-Regular.ttf);
+}
+
 @theme {
   --font-avro: 'Avro-Regular', sans-serif;
   --font-poppins: 'Poppins-Regular', sans-serif;
@@ -42,8 +47,10 @@ html, body, #root {
   --font-poppins-semibold: 'Poppins-SemiBold', sans-serif;
   --font-poppins-medium: 'Poppins-Medium', sans-serif;
   --font-alatsi: 'Alatsi-Regular', sans-serif;
+  --font-ponnala: 'Ponnala-Regular', sans-serif;
 
   --color-primary-accent: #D3571F;
   --color-secondary-accent: #FF9768;
+  --color-tritary-accent: #E46E39;
   --color-primary: #000000
 }
