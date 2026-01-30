@@ -7,7 +7,7 @@ const NotFoundPage = () => {
         404 - Page is not Found!
       </h1>
       <Link to={"/"}>
-        <button className="text-center text-2xl text-primary p-2 rounded-xl font-poppins bg-amber-50 hover:text-primary-accent hover:bg-gray-300 ">
+        <button className="text-center text-2xl text-primary p-2 rounded-xl font-poppins border border-black/50 hover:text-primary-accent hover:bg-gray-300 cursor-pointer ">
           Go back home
         </button>
       </Link>

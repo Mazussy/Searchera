@@ -4,6 +4,9 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import LoginPage from "./components/pages/LoginPage.jsx";
 import RegisterPage from "./components/pages/RegisterPage.jsx";
 import NotFoundPage from "./components/pages/NotFoundPage.jsx";
+import Companies from "./components/pages/Companies.jsx";
+import Jobs from "./components/pages/Jobs.jsx";
+import LandingPage from "./components/pages/LandingPage.jsx";
 import "./index.css";
 import App from "./App.jsx";
 
@@ -11,6 +14,20 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    children: [
+      {
+        index: true,
+        element: <LandingPage />,
+      },
+      {
+        path: "jobs",
+        element: <Jobs />,
+      },
+      {
+        path: "companies",
+        element: <Companies />,
+      },
+    ],
   },
   {
     path: "/login",

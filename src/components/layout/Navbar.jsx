@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import LoginIcon from "../../assets/images/Login.png";
 import LoginHoverIcon from "../../assets/images/Login2.png";
+import { Link } from "react-router-dom";
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,40 +13,40 @@ function Navbar() {
         <div className="flex items-center h-16">
           {/* Logo */}
           <div className="shrink-0">
-            <a
-              href="/"
+            <Link
+              to={"/"}
               className="text-[30px] text-primary-accent font-normal font-alatsi hover:text-secondary-accent transition-colors"
             >
               SEARCHERA
-            </a>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-12 flex-1 justify-center">
-            <a
-              href="/jobs"
+            <Link
+              to={"/jobs"}
               className="text-primary text-[20px] font-avro font-normal hover:text-secondary-accent hover:border-b-2 hover:border-b-secondary-accent transition-all cursor-pointer"
             >
               Jobs
-            </a>
-            <a
-              href="/companies"
+            </Link>
+            <Link
+              to={"companies"}
               className="text-primary text-[20px] font-avro font-normal hover:text-secondary-accent hover:border-b-2 hover:border-b-secondary-accent transition-all cursor-pointer"
             >
               Companies
-            </a>
-            <a
-              href="/career-advice"
+            </Link>
+            <Link
+              to={"career-advice"}
               className="text-primary text-[20px] font-avro font-normal hover:text-secondary-accent hover:border-b-2 hover:border-b-secondary-accent transition-all cursor-pointer"
             >
               Career Advice
-            </a>
-            <a
-              href="/for-employers"
+            </Link>
+            <Link
+              to={"/for-employers"}
               className="text-primary text-[20px] font-avro font-normal hover:text-secondary-accent hover:border-b-2 hover:border-b-secondary-accent transition-all cursor-pointer"
             >
               For Employers
-            </a>
+            </Link>
           </div>
 
           {/* Login Button */}

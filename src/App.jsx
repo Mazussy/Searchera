@@ -1,12 +1,14 @@
 import Navbar from "./components/layout/Navbar";
-import LandingPage from "./components/pages/LandingPage";
+import Footer from "./components/layout/Footer";
+import { Outlet } from "react-router-dom";
 import "./App.css";
 
 function App() {
   return (
     <>
       <Navbar />
-      <LandingPage />
+      <Outlet />
+      <Footer />
     </>
   );
 }

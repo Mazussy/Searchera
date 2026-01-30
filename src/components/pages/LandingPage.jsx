@@ -1,7 +1,7 @@
 const LandingPage = () => {
   return (
     <>
-      <div className="w-full h-full flex justify-evenly items-center border-b border-b-[#4242425C]/36">
+      <div className="w-full flex justify-evenly items-center border-b border-b-[#4242425C]/36">
         <img src="../src/assets/images/Landing1.png"></img>
         <div className="w-1/3 flex flex-col text-center justify-evenly items-center gap-3">
           <h1 className="font-poppins-bold  text-[28px] text-primary-accent ">
@@ -23,11 +23,11 @@ const LandingPage = () => {
         </div>
         <img src="../src/assets/images/Landing2.png"></img>
       </div>
-      <div className="w-full h-full flex flex-col items-center gap-15 pt-10 border-b border-b-[#4242425C]/36">
+      <div className="w-full flex flex-col items-center gap-15 pt-10 border-b border-b-[#4242425C]/36">
         <h2 className="font-ponnala text-[#373535] border-b border-b-[#4242425C]/36">
           What Can You Do
         </h2>
-        <div className="w-full h-full flex justify-evenly items-center mb-15">
+        <div className="w-full flex justify-evenly items-center mb-15">
           <div className="flex flex-col justify-center items-center gap-3">
             <img
               src="../src/assets/icons/suitcase.png"
@@ -66,11 +66,11 @@ const LandingPage = () => {
           </div>
         </div>
       </div>
-      <div className="w-full h-full flex flex-col justify-around items-center gap-15 pt-10 bg-[#FFECE3] border-b border-b-[#4242425C]/36">
+      <div className="w-full flex flex-col justify-around items-center gap-15 pt-10 bg-[#FFECE3] border-b border-b-[#4242425C]/36">
         <h2 className="font-ponnala text-[#373535] border-b border-b-[#4242425C]/36">
           Your Journey With Searchera
         </h2>
-        <div className="w-full h-full flex justify-evenly items-center">
+        <div className="w-full flex justify-evenly items-center">
           <div className="w-1/4 flex flex-col justify-evenly items-center gap-3 text-center">
             <img src="../src/assets/icons/1.png"></img>
             <h3 className="font-poppins-semibold text-primary text-md">
