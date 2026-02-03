@@ -9,27 +9,41 @@ const Footer = () => {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <img className="w-12 h-12" src="/src/assets/icons/facebook.png"></img>
+          <img
+            className="w-10 h-10 hover:content-[url('/src/assets/icons/FB2.png')]"
+            src="/src/assets/icons/FB1.png"
+          ></img>
         </a>
         <a
           href="https://instagram.com"
           target="_blank"
           rel="noopener noreferrer"
         >
-          <img className="w-12 h-12" src="/src/assets/icons/social.png"></img>
+          <img
+            className="w-10 h-10 hover:content-[url('/src/assets/icons/Insta2.png')]"
+            src="/src/assets/icons/Insta1.png"
+          ></img>
         </a>
         <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer">
-          <img className="w-12 h-12" src="/src/assets/icons/tik-tok.png"></img>
+          <img
+            className="w-10 h-10 hover:content-[url('/src/assets/icons/Tiktok2.png')]"
+            src="/src/assets/icons/Tiktok1.png"
+          ></img>
         </a>
       </div>
       <div className="flex gap-10">
-        <p className="font-alatsi text-primary text-[17px]">SEARCHERA</p>
-        <Link to={"about-us"} className="font-alatsi text-primary text-[17px]">
+        <p className="font-alatsi text-primary text-[17px] hover:text-[#FF996C] transition-colors">
+          SEARCHERA
+        </p>
+        <Link
+          to={"about-us"}
+          className="font-alatsi text-primary text-[17px] hover:text-[#FF996C] transition-colors"
+        >
           About Us
         </Link>
         <Link
           to={"contact-us"}
-          className="font-alatsi text-primary text-[17px]"
+          className="font-alatsi text-primary text-[17px] hover:text-[#FF996C] transition-colors"
         >
           {" "}
           Contact Us
