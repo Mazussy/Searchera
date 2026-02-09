@@ -90,7 +90,7 @@ function Navbar() {
                   to={
                     item.id === "employers" ? "/for-employers" : `/${item.id}`
                   }
-                  className="text-primary text-[20px] font-avro font-normal cursor-pointer transition-colors"
+                  className="text-primary text-[20px] font-avro font-normal cursor-pointer transition-colors hover:text-secondary-accent"
                 >
                   {item.label}
                 </Link>
