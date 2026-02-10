@@ -5,8 +5,8 @@ import NotFoundPage from "./components/pages/NotFoundPage.jsx";
 import Companies from "./components/pages/Companies.jsx";
 import Jobs from "./components/pages/Jobs.jsx";
 import LandingPage from "./components/pages/LandingPage.jsx";
-import LoginPage from "./components/pages/LoginPage.jsx";
-import RegisterPage from "./components/pages/RegisterPage.jsx";
+import LoginPage from "./components/pages/loginPage.jsx";
+import RegisterPage from "./components/pages/registerPage.jsx";
 import "./index.css";
 import App from "./App.jsx";
 
