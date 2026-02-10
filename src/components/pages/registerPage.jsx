@@ -312,9 +312,13 @@ const RegisterPage = () => {
             </p>
 
             <div className="space-y-4">
-              <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition hover:bg-gray-50 ${
-                selectedRole === 'JobSeeker' ? 'border-gray-300 bg-orange-50' : 'border-gray-100'
-              }`}>
+              <label
+                className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition hover:bg-gray-50 ${
+                  selectedRole === "JobSeeker"
+                    ? "border-gray-300 bg-orange-50"
+                    : "border-gray-100"
+                }`}
+              >
                 <input
                   type="radio"
                   name="role"
@@ -322,17 +326,25 @@ const RegisterPage = () => {
                   checked={selectedRole === "JobSeeker"}
                   onChange={(e) => setSelectedRole(e.target.value)}
                   className="w-5 h-5 text-primary-accent focus:ring-primary-accent cursor-pointer"
-                  style={{ accentColor: '#D3571F' }}
+                  style={{ accentColor: "#D3571F" }}
                 />
                 <div>
-                  <div className="font-medium text-primary font-poppins">Job Seeker</div>
-                  <div className="text-xs text-gray-500 font-poppins">Looking for opportunities</div>
+                  <div className="font-medium text-primary font-poppins">
+                    Job Seeker
+                  </div>
+                  <div className="text-xs text-gray-500 font-poppins">
+                    Looking for opportunities
+                  </div>
                 </div>
               </label>
 
-              <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition hover:bg-gray-50 ${
-                selectedRole === 'Employer' ? 'border-gray-300 bg-orange-50' : 'border-gray-100'
-              }`}>
+              <label
+                className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition hover:bg-gray-50 ${
+                  selectedRole === "Employer"
+                    ? "border-gray-300 bg-orange-50"
+                    : "border-gray-100"
+                }`}
+              >
                 <input
                   type="radio"
                   name="role"
@@ -340,11 +352,15 @@ const RegisterPage = () => {
                   checked={selectedRole === "Employer"}
                   onChange={(e) => setSelectedRole(e.target.value)}
                   className="w-5 h-5 text-primary-accent focus:ring-primary-accent cursor-pointer"
-                  style={{ accentColor: '#D3571F' }}
+                  style={{ accentColor: "#D3571F" }}
                 />
                 <div>
-                  <div className="font-medium text-primary font-poppins">Employer</div>
-                  <div className="text-xs text-gray-500 font-poppins">Hiring talent</div>
+                  <div className="font-medium text-primary font-poppins">
+                    Employer
+                  </div>
+                  <div className="text-xs text-gray-500 font-poppins">
+                    Hiring talent
+                  </div>
                 </div>
               </label>
             </div>
