@@ -1,10 +1,10 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import NotFoundPage from "./components/pages/NotFoundPage.jsx";
-import Companies from "./components/pages/Companies.jsx";
-import Jobs from "./components/pages/Jobs.jsx";
-import LandingPage from "./components/pages/LandingPage.jsx";
+import NotFoundPage from "./components/pages/notFoundPage.jsx";
+import Companies from "./components/pages/companies.jsx";
+import Jobs from "./components/pages/jobs.jsx";
+import LandingPage from "./components/pages/landingPage.jsx";
 import LoginPage from "./components/pages/loginPage.jsx";
 import RegisterPage from "./components/pages/registerPage.jsx";
 import "./index.css";
