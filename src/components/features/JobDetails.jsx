@@ -4,77 +4,90 @@ import { useState } from "react";
 const JobDetails = ({ job }) => {
   const [showMore, setShowMore] = useState(false);
 
-  return (
-    <div className="border rounded-lg p-6 bg-white">
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center shrink-0">
-            <span className="font-bold text-xl">{job.company.charAt(0)}</span>
-          </div>
+  const previewParagraphs = job.description.slice(0, 3);
+  const hiddenParagraphs = job.description.slice(3);
 
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-semibold">{job.company}</span>
-              <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 fill-current" />
-                <span className="text-sm">{job.rating}</span>
+  return (
+    <div className="space-y-4">
+      <section className="overflow-hidden rounded-2xl border border-[#DADADA] bg-white">
+        <div className="flex items-start justify-between px-5 py-5 md:px-7">
+          <div className="flex items-start gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#E0E0E0] bg-white">
+              <span className="text-lg font-semibold text-[#292624]">
+                {job.company.charAt(0)}
+              </span>
+            </div>
+
+            <div>
+              <div className="mb-1 flex items-center gap-3 text-[#292624]">
+                <span className="text-3xl font-avro font-normal leading-none">{job.company}</span>
+                <div className="flex items-center gap-1 text-sm font-normal">
+                  <span>{job.rating}</span>
+                  <Star className="h-3.5 w-3.5 fill-current" />
+                </div>
+              </div>
+              <h2 className="mb-1 text-4xl font-poppins-semibold leading-tight text-[#141414]">
+                {job.title}
+              </h2>
+              <div className="flex flex-wrap gap-2 text-xl text-[#6A6A6A]">
+                <span>{job.location}</span>
+                <span>·</span>
+                <span>{job.salary}</span>
               </div>
             </div>
-            <h2 className="text-2xl font-bold mb-2">{job.title}</h2>
-            <div className="flex gap-4 text-sm">
-              <span>{job.location}</span>
-              <span>{job.salary}</span>
-            </div>
           </div>
-        </div>
 
-        <button className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors">
-          Apply
-        </button>
-      </div>
-
-      {/* Resume Match Banner */}
-      {job.resumeMatch && (
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-          <h3 className="font-semibold mb-1">Is your resume a good match?</h3>
-          <p className="text-sm mb-3">
-            Use AI to find out how well the skills on your resume fit this job
-            description.
-          </p>
-          <button className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600 transition-colors">
-            Get insights
+          <button className="rounded-lg bg-black px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#1F1F1F]">
+            Apply
           </button>
         </div>
-      )}
 
-      {/* About Section */}
-      <div className="mb-6">
-        <h3 className="text-xl font-semibold mb-3">About {job.company}</h3>
-        <div className="space-y-4 text-sm leading-relaxed">
-          {job.description.map((paragraph, index) => (
+        {job.resumeMatch && (
+          <div className="border-t border-[#E7D9D0] bg-[#FFF0E8] px-5 py-4 md:px-7">
+            <h3 className="text-3xl font-poppins-medium text-[#E26F3A]">
+              Is your resume a good match?
+            </h3>
+            <p className="mt-1 text-[14px] text-[#EE8B5B]">
+              Use AI to find out how well the skills on your resume fit this job
+              description.
+            </p>
+            <button className="mt-3 rounded-md bg-[#E06E39] px-3 py-1.5 text-xs text-white transition-colors hover:bg-[#CC5F2D]">
+              Get insights
+            </button>
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-2xl border border-[#DADADA] bg-white px-5 py-5 md:px-7">
+        <h3 className="mb-4 text-4xl font-poppins-semibold text-[#1B1B1B]">
+          About {job.company}
+        </h3>
+        <div className="space-y-4 text-base leading-relaxed text-[#2C2C2C]">
+          {previewParagraphs.map((paragraph, index) => (
             <p key={index}>{paragraph}</p>
           ))}
 
-          {!showMore && job.fullDescription && (
+          {!showMore && hiddenParagraphs.length > 0 && (
             <button
               onClick={() => setShowMore(true)}
-              className="flex items-center gap-1 text-orange-500 hover:text-orange-600 font-medium"
+              className="flex items-center gap-1 text-lg font-medium text-tritary-accent hover:text-[#CC5F2D]"
             >
-              Show more <ChevronDown className="w-4 h-4" />
+              Show more <ChevronDown className="h-4 w-4" />
             </button>
           )}
 
-          {showMore && job.fullDescription && (
-            <>
-              {job.fullDescription.map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
-              ))}
-            </>
+          {showMore &&
+            hiddenParagraphs.map((paragraph, index) => (
+              <p key={`${paragraph.slice(0, 20)}-${index}`}>{paragraph}</p>
+            ))}
+
+          {showMore && job.fullDescription?.length > 0 && (
+            job.fullDescription.map((paragraph, index) => (
+              <p key={`${paragraph.slice(0, 20)}-full-${index}`}>{paragraph}</p>
+            ))
           )}
         </div>
-      </div>
-
-      {/* Additional sections can be added here */}
+      </section>
     </div>
   );
 };

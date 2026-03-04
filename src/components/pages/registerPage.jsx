@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { register } from "../../utilities/api/authApi";
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -32,36 +33,27 @@ const RegisterPage = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        "https://searchera2026-001-site1.site4future.com/api/Account/Register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            phoneNumber: formData.phoneNumber || null,
-            email: formData.email,
-            password: formData.password,
-            confirmPassword: formData.confirmPassword || null,
-            userType: formData.userType,
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Registration failed");
+      const data = await register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phoneNumber: formData.phoneNumber || null,
+        email: formData.email,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword || null,
+        userType: formData.userType,
+      });
+      
+      // Save token if returned immediately
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        window.location.href = "/jobs";
+      } else {
+        alert(
+          "Registration successful! Please check your email to confirm your account.",
+        );
       }
-
-      const data = await response.json();
-      alert(
-        "Registration successful! Please check your email to confirm your account.",
-      );
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message || "Registration failed");
     } finally {
       setLoading(false);
     }

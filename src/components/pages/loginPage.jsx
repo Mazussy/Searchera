@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { login } from "../../utilities/api/authApi";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -27,29 +28,17 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        "https://searchera2026-001-site1.site4future.com/api/Account/Login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: formData.email,
-            password: formData.password,
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Login failed");
+      const data = await login(formData.email, formData.password);
+      
+      // Save token to localStorage
+      if (data.token) {
+        localStorage.setItem("token", data.token);
       }
-
-      const data = await response.json();
-      alert("Login successful!");
+      
+      // Redirect to jobs page
+      window.location.href = "/jobs";
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message || "Login failed");
     } finally {
       setLoading(false);
     }

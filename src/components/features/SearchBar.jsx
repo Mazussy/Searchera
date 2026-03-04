@@ -1,24 +1,45 @@
 import { Search, MapPin } from "lucide-react";
 
-const SearchBar = ({ onSearch }) => {
+const SearchBar = ({ filters, onFiltersChange }) => {
+  const handleKeywordChange = (event) => {
+    onFiltersChange({
+      ...filters,
+      keyword: event.target.value,
+    });
+  };
+
+  const handleLocationChange = (event) => {
+    onFiltersChange({
+      ...filters,
+      location: event.target.value,
+    });
+  };
+
   return (
-    <div className="flex gap-2 py-6 border-b">
-      <div className="flex items-center flex-1 border rounded-lg px-4 py-3 gap-3">
-        <Search className="w-5 h-5 text-gray-400" />
+    <div className="w-full border-y border-[#4242425C]/25 py-3">
+      <div className="mx-auto flex w-full max-w-160 items-center overflow-hidden rounded-full border border-[#DBDBDB] bg-[#F5F5F5]">
+        <div className="flex min-w-0 flex-1 items-center gap-2 px-4 py-2">
+          <Search className="h-4 w-4 shrink-0 text-[#9F9F9F]" />
         <input
           type="text"
           placeholder="Find your perfect job"
-          className="flex-1 outline-none bg-transparent"
+            value={filters.keyword}
+            onChange={handleKeywordChange}
+            className="min-w-0 flex-1 bg-transparent text-sm text-[#292624] outline-none placeholder:text-[#B0B0B0]"
         />
       </div>
-      <div className="flex items-center flex-1 border rounded-lg px-4 py-3 gap-3">
-        <MapPin className="w-5 h-5 text-gray-400" />
+        <div className="h-6 w-px bg-[#E2E2E2]" />
+        <div className="flex min-w-0 flex-1 items-center gap-2 px-4 py-2">
+          <MapPin className="h-4 w-4 shrink-0 text-[#9F9F9F]" />
         <input
           type="text"
           placeholder="City, State, or 'remote'"
-          className="flex-1 outline-none bg-transparent"
+            value={filters.location}
+            onChange={handleLocationChange}
+            className="min-w-0 flex-1 bg-transparent text-sm text-[#292624] outline-none placeholder:text-[#B0B0B0]"
         />
       </div>
+    </div>
     </div>
   );
 };

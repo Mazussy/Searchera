@@ -4,32 +4,38 @@ const JobCard = ({ job, isSelected, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
-        isSelected ? "border-blue-500 bg-blue-50" : "border-gray-200"
+      className={`cursor-pointer p-4 transition-all ${
+        isSelected
+          ? "rounded-2xl border border-[#E5E5E5] bg-[#FAFAFA] shadow-sm"
+          : "hover:bg-gray-50"
       }`}
     >
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
-          <span className="font-bold text-lg">{job.company.charAt(0)}</span>
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-[#E3E3E3] bg-white">
+          <span className="text-sm font-semibold text-[#292624]">
+            {job.company.charAt(0)}
+          </span>
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-semibold">{job.company}</span>
-            <div className="flex items-center gap-1">
-              <Star className="w-4 h-4 fill-current" />
-              <span className="text-sm">{job.rating}</span>
+          <div className="mb-1 flex items-center gap-2 text-sm text-[#292624]">
+            <span className="truncate font-normal">{job.company}</span>
+            <div className="flex items-center gap-1 text-[13px] font-normal">
+              <span>{job.rating}</span>
+              <Star className="h-3.5 w-3.5 fill-current" />
             </div>
           </div>
 
-          <h3 className="font-semibold mb-1">{job.title}</h3>
+          <h3 className="mb-1 line-clamp-2 font-poppins-semibold text-[17px] leading-snug text-[#292624]">
+            {job.title}
+          </h3>
 
-          <div className="text-sm space-y-1">
+          <div className="space-y-1 text-sm text-[#646464]">
             <p>{job.location}</p>
             <p>{job.salary}</p>
           </div>
 
-          <div className="text-xs text-gray-500 mt-2">{job.postedTime}</div>
+          <div className="mt-2 text-right text-xs text-[#9A9A9A]">{job.postedTime}</div>
         </div>
       </div>
     </div>

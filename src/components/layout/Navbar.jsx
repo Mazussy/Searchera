@@ -11,6 +11,19 @@ function Navbar() {
   const [isLoginHovered, setIsLoginHovered] = useState(false);
   const [loginIcon, setLoginIcon] = useState(Login1);
   const [hoveredNav, setHoveredNav] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsLoggedIn(false);
+    window.location.href = "/login";
+  };
 
   const navItems = [
     {
@@ -116,20 +129,29 @@ function Navbar() {
             ))}
           </div>
 
-          {/* Login Button */}
+          {/* Login/Logout Button */}
           <div className="hidden md:flex shrink-0">
-            <a
-              href="/login"
-              className="cursor-pointer"
-              onMouseEnter={() => setIsLoginHovered(true)}
-              onMouseLeave={() => setIsLoginHovered(false)}
-            >
-              <img
-                src={loginIcon}
-                alt="Login"
-                className="w-auto h-8 transition-all duration-300 ease-in-out"
-              />
-            </a>
+            {isLoggedIn ? (
+              <button
+                onClick={handleLogout}
+                className="rounded-lg bg-primary-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-tritary-accent"
+              >
+                Logout
+              </button>
+            ) : (
+              <a
+                href="/login"
+                className="cursor-pointer"
+                onMouseEnter={() => setIsLoginHovered(true)}
+                onMouseLeave={() => setIsLoginHovered(false)}
+              >
+                <img
+                  src={loginIcon}
+                  alt="Login"
+                  className="w-auto h-8 transition-all duration-300 ease-in-out"
+                />
+              </a>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -208,26 +230,49 @@ function Navbar() {
             >
               For Employers
             </a>
-            <a
-              href="/login"
-              className="flex items-center gap-2 text-primary hover:text-primary-accent font-medium text-sm py-2 transition-colors duration-200"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
+            {isLoggedIn ? (
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 text-primary hover:text-primary-accent font-medium text-sm py-2 transition-colors duration-200"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                />
-              </svg>
-              Login
-            </a>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+                Logout
+              </button>
+            ) : (
+              <a
+                href="/login"
+                className="flex items-center gap-2 text-primary hover:text-primary-accent font-medium text-sm py-2 transition-colors duration-200"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                  />
+                </svg>
+                Login
+              </a>
+            )}
           </div>
         </div>
       </div>
