@@ -11,6 +11,7 @@ const RegisterPage = () => {
     confirmPassword: "",
     phoneNumber: "",
     userType: "JobSeeker",
+    currentStatus: 0,
     termsAccepted: false,
   });
   const [error, setError] = useState("");
@@ -33,27 +34,58 @@ const RegisterPage = () => {
     setLoading(true);
 
     try {
-      const data = await register({
+      const payload = {
         firstName: formData.firstName,
         lastName: formData.lastName,
-        phoneNumber: formData.phoneNumber || null,
         email: formData.email,
         password: formData.password,
-        confirmPassword: formData.confirmPassword || null,
+        confirmPassword: formData.confirmPassword,
         userType: formData.userType,
-      });
-      
+        currentStatus: Number(formData.currentStatus),
+      };
+
+      // Only include phoneNumber if the user actually typed one
+      if (formData.phoneNumber && formData.phoneNumber.trim() !== "") {
+        payload.phoneNumber = formData.phoneNumber.trim();
+      }
+
+      const data = await register(payload);
+
       // Save token if returned immediately
-      if (data.token) {
+      if (data?.token) {
         localStorage.setItem("token", data.token);
         window.location.href = "/jobs";
       } else {
         alert(
           "Registration successful! Please check your email to confirm your account.",
         );
+        window.location.href = "/login";
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || "Registration failed");
+      // Surface the real API validation message
+      const resp = err.response?.data;
+      console.error("Register API error:", err.response?.status, resp);
+
+      let message = "Registration failed";
+      if (typeof resp === "string" && resp.trim()) {
+        message = resp;
+      } else if (resp?.message) {
+        message = resp.message;
+      } else if (resp?.title) {
+        message = resp.title;
+      } else if (resp?.errors) {
+        // ASP.NET ModelState: { errors: { FieldName: ["msg"] } }
+        const flat = Object.entries(resp.errors)
+          .map(([field, msgs]) => {
+            const list = Array.isArray(msgs) ? msgs : [msgs];
+            return `${field}: ${list.join(", ")}`;
+          })
+          .join(" | ");
+        message = flat || message;
+      } else if (Array.isArray(resp)) {
+        message = resp.map((e) => e?.description ?? e?.message ?? JSON.stringify(e)).join(", ");
+      }
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -203,6 +235,30 @@ const RegisterPage = () => {
               >
                 <option value="JobSeeker">Job Seeker</option>
                 <option value="Employer">Employer</option>
+              </select>
+            </div>
+
+            {/* Current Status */}
+            <div className="form-group">
+              <label className="text-sm font-medium text-primary">
+                Current status
+              </label>
+              <select
+                name="currentStatus"
+                value={formData.currentStatus}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, currentStatus: Number(e.target.value) }))
+                }
+                required
+                className="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-primary-accent"
+              >
+                <option value={0}>Open to work</option>
+                <option value={1}>Actively applying</option>
+                <option value={2}>Employed — open to offers</option>
+                <option value={3}>Employed — not looking</option>
+                <option value={4}>Freelancing</option>
+                <option value={5}>Student</option>
               </select>
             </div>
 

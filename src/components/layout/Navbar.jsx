@@ -19,6 +19,8 @@ function Navbar() {
     setIsLoggedIn(!!token);
   }, []);
 
+  const isAdmin = localStorage.getItem("isAdmin") === "true";
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
@@ -130,7 +132,23 @@ function Navbar() {
           </div>
 
           {/* Login/Logout Button */}
-          <div className="hidden md:flex shrink-0">
+          <div className="hidden md:flex shrink-0 items-center gap-3">
+            {isLoggedIn && (
+              <Link
+                to="/profile"
+                className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-poppins-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                My Profile
+              </Link>
+            )}
+            {isLoggedIn && isAdmin && (
+              <Link
+                to="/admin"
+                className="rounded-lg border border-[#D3571F]/40 px-3 py-1.5 text-xs font-poppins-medium text-[#D3571F] hover:bg-[#FFECE3] transition-colors"
+              >
+                Admin Panel
+              </Link>
+            )}
             {isLoggedIn ? (
               <button
                 onClick={handleLogout}
@@ -230,6 +248,14 @@ function Navbar() {
             >
               For Employers
             </a>
+            {isLoggedIn && (
+              <a
+                href="/profile"
+                className="block text-primary hover:text-primary-accent font-medium text-sm py-2 transition-colors duration-200"
+              >
+                My Profile
+              </a>
+            )}
             {isLoggedIn ? (
               <button
                 onClick={handleLogout}
