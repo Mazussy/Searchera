@@ -11,19 +11,12 @@ function Navbar() {
   const [isLoginHovered, setIsLoginHovered] = useState(false);
   const [loginIcon, setLoginIcon] = useState(Login1);
   const [hoveredNav, setHoveredNav] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    // Check if user is logged in
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-  }, []);
+  const isLoggedIn = !!localStorage.getItem("token");
 
   const isAdmin = localStorage.getItem("isAdmin") === "true";
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    setIsLoggedIn(false);
     window.location.href = "/login";
   };
 

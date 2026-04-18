@@ -35,25 +35,29 @@ const Toast = ({ toast }) => {
 };
 
 // ── Input Field ───────────────────────────────────────────────────────────
-const Field = ({ label, name, type = "text", value, onChange, placeholder, icon: Icon, disabled }) => (
-  <div>
-    <label className="block text-xs font-poppins-medium text-gray-500 mb-1.5">{label}</label>
-    <div className="relative">
-      {Icon && <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />}
-      <input
-        type={type}
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        disabled={disabled}
-        className={`w-full ${Icon ? "pl-9" : "pl-4"} pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-poppins placeholder-gray-400
-          focus:outline-none focus:ring-2 focus:ring-[#D3571F]/30 focus:border-[#D3571F]/50
-          disabled:bg-gray-50 disabled:text-gray-400 transition-colors`}
-      />
+const Field = ({ label, name, type = "text", value, onChange, placeholder, icon, disabled }) => {
+  const Icon = icon;
+
+  return (
+    <div>
+      <label className="block text-xs font-poppins-medium text-gray-500 mb-1.5">{label}</label>
+      <div className="relative">
+        {Icon && <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />}
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          disabled={disabled}
+          className={`w-full ${Icon ? "pl-9" : "pl-4"} pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-poppins placeholder-gray-400
+            focus:outline-none focus:ring-2 focus:ring-[#D3571F]/30 focus:border-[#D3571F]/50
+            disabled:bg-gray-50 disabled:text-gray-400 transition-colors`}
+        />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // ── Delete Confirm Modal ──────────────────────────────────────────────────
 const DeleteModal = ({ onConfirm, onClose }) => (
@@ -79,7 +83,9 @@ const DeleteModal = ({ onConfirm, onClose }) => (
 );
 
 // ── Social Link display ───────────────────────────────────────────────────
-const SocialLink = ({ href, icon: Icon, label, color }) => {
+const SocialLink = ({ href, icon, label, color }) => {
+  const Icon = icon;
+
   if (!href) return null;
   return (
     <a

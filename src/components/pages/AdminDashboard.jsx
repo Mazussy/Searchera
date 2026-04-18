@@ -11,7 +11,6 @@ import {
   updateCategory,
   deleteCategory,
   getAllJobs,
-  getAllCompanies,
 } from "../../utilities/api/adminApi";
 
 // ── helpers ────────────────────────────────────────────────────────────────
@@ -91,7 +90,9 @@ const RejectModal = ({ type, item, onConfirm, onClose }) => {
 
 // ── Category Modal ─────────────────────────────────────────────────────────
 const CategoryModal = ({ category, onConfirm, onClose }) => {
-  const [name, setName] = useState(category?.categoryName ?? "");
+  const [name, setName] = useState(
+    category?.categoryName ?? category?.CategoryName ?? "",
+  );
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
@@ -134,7 +135,6 @@ const AdminDashboard = () => {
   const [pendingCompanies, setPendingCompanies] = useState([]);
   const [categories, setCategories] = useState([]);
   const [allJobs, setAllJobs] = useState([]);
-  const [allCompanies, setAllCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [toast, setToast] = useState(null);
@@ -150,19 +150,17 @@ const AdminDashboard = () => {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [pJobs, pCompanies, cats, aJobs, aCompanies] = await Promise.allSettled([
+      const [pJobs, pCompanies, cats, aJobs] = await Promise.allSettled([
         getPendingJobs(),
         getPendingCompanies(),
         getAllCategories(),
         getAllJobs(),
-        getAllCompanies(),
       ]);
       if (pJobs.status === "fulfilled")      setPendingJobs(Array.isArray(pJobs.value) ? pJobs.value : []);
       if (pCompanies.status === "fulfilled") setPendingCompanies(Array.isArray(pCompanies.value) ? pCompanies.value : []);
       if (cats.status === "fulfilled")       setCategories(Array.isArray(cats.value) ? cats.value : []);
       if (aJobs.status === "fulfilled")      setAllJobs(Array.isArray(aJobs.value) ? aJobs.value : []);
-      if (aCompanies.status === "fulfilled") setAllCompanies(Array.isArray(aCompanies.value) ? aCompanies.value : []);
-    } catch (err) {
+    } catch {
       showToast("Failed to load data", "error");
     } finally {
       setLoading(false);
@@ -222,7 +220,13 @@ const AdminDashboard = () => {
       await addCategory(name);
       await loadData();
       showToast("Category added ✓");
-    } catch { showToast("Failed to add category", "error"); }
+    } catch (error) {
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.title ||
+        "Failed to add category";
+      showToast(message, "error");
+    }
   };
 
   const handleEditCategory = async (id, name) => {

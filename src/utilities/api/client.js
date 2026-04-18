@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ??
-  "https://searchera2026-001-site1.site4future.com";
+  "https://searchera-001-site1.rtempurl.com";
 
 const tokenKeys = ["token", "accessToken", "authToken", "jwt"];
 

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { register } from "../../utilities/api/authApi";
+import { API_BASE_URL } from "../../utilities/api/client";
 
 // ── password strength checker ─────────────────────────────────────────────
 const passwordRules = [
@@ -205,7 +206,7 @@ const RegisterPage = () => {
   const handleExternalLogin = (provider) => { setPendingProvider(provider); setShowRoleModal(true); };
   const confirmExternalLogin = () => {
     if (pendingProvider && selectedRole)
-      window.location.href = `https://searchera2026-001-site1.site4future.com/api/Account/ExternalLogin?provider=${pendingProvider}&role=${selectedRole}`;
+      window.location.href = `${API_BASE_URL}/api/Account/ExternalLogin?provider=${pendingProvider}&role=${selectedRole}`;
   };
 
   return (

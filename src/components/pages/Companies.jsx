@@ -2,16 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import { Star, Globe, Building2, Search, Users } from "lucide-react";
 import { getAllCompanies } from "../../utilities/api/companiesApi";
 
-// ── seed data shown while API loads ──────────────────────────────────────
-const companiesSeed = [
-  { id: "1", companyName: "Horizon Tech",  industry: "Technology",  description: "A leading software company building tools for the Arab world.", website: "https://horizon.tech", averageRating: 4.3, reviewCount: 128 },
-  { id: "2", companyName: "BluePeak",      industry: "Design",      description: "We partner with startups to design and launch meaningful digital products.", website: "https://bluepeak.io",   averageRating: 4.0, reviewCount: 76 },
-  { id: "3", companyName: "Nova Labs",     industry: "Healthcare",  description: "AI-first products for healthcare and education.", website: "https://novalabs.io",  averageRating: 4.5, reviewCount: 210 },
-  { id: "4", companyName: "Wave Commerce", industry: "E-Commerce",  description: "Helping D2C brands scale through data-backed growth campaigns.", website: "",                   averageRating: 3.9, reviewCount: 54 },
-  { id: "5", companyName: "Astra Ventures",industry: "Finance",     description: "Supporting early-stage MENA companies with strategic partnerships.", website: "https://astra.vc",    averageRating: 4.1, reviewCount: 93 },
-  { id: "6", companyName: "Horizons Group",industry: "Operations",  description: "Operational excellence and distributed teams for scaling companies.", website: "",                   averageRating: 3.7, reviewCount: 41 },
-];
-
 // ── helpers ───────────────────────────────────────────────────────────────
 const normalizeCompany = (raw = {}) => ({
   id:            raw.id          ?? raw.companyId    ?? String(Math.random()),
@@ -109,7 +99,7 @@ const CompanyCard = ({ company }) => {
 
 // ── Main Component ────────────────────────────────────────────────────────
 const Companies = () => {
-  const [companies, setCompanies] = useState(companiesSeed.map(normalizeCompany));
+  const [companies, setCompanies] = useState([]);
   const [loading, setLoading]     = useState(true);
   const [apiMsg, setApiMsg]       = useState("");
   const [search, setSearch]       = useState("");
@@ -126,7 +116,7 @@ const Companies = () => {
         else setApiMsg("No companies found yet.");
       } catch {
         if (!active) return;
-        setApiMsg("Could not load companies — showing sample data.");
+        setApiMsg("Could not load companies from API.");
       } finally {
         if (active) setLoading(false);
       }

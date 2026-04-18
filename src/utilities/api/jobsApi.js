@@ -149,3 +149,43 @@ export const getJobDetails = async (jobId) => {
 
   return rawItem ? normalizeJob(rawItem) : null;
 };
+
+const normalizeCategory = (rawCategory = {}) => ({
+  id: pickFirst(rawCategory, ["id", "Id", "categoryId", "CategoryId"]),
+  categoryName: pickFirst(rawCategory, [
+    "categoryName",
+    "CategoryName",
+    "name",
+    "Name",
+  ], "Unnamed category"),
+});
+
+export const getAllCategories = async () => {
+  const { data } = await apiClient.get("/api/Category/GetAllCategories");
+
+  return extractCollection(data)
+    .map((item) => normalizeCategory(item))
+    .filter((item) => item.id);
+};
+
+export const createJob = async (payload) => {
+  const formData = new FormData();
+
+  formData.append("CategoryId", String(payload.categoryId).trim());
+  formData.append("Title", String(payload.title).trim());
+  formData.append("Description", String(payload.description).trim());
+
+  if (payload.summary && String(payload.summary).trim()) {
+    formData.append("Summary", String(payload.summary).trim());
+  }
+
+  formData.append("JobType", String(payload.jobType));
+  formData.append("SalaryRange", String(payload.salaryRange).trim());
+  formData.append("Location", String(payload.location).trim());
+  formData.append("Deadline", String(payload.deadline));
+
+  // Let the browser/axios set multipart boundary automatically.
+  const { data } = await apiClient.post(JOB_ENDPOINTS.createJob, formData);
+
+  return data;
+};

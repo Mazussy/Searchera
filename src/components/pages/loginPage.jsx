@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { login } from "../../utilities/api/authApi";
+import { API_BASE_URL } from "../../utilities/api/client";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -51,7 +52,7 @@ const LoginPage = () => {
 
   const confirmExternalLogin = () => {
     if (pendingProvider && selectedRole) {
-      window.location.href = `https://searchera2026-001-site1.site4future.com/api/Account/ExternalLogin?provider=${pendingProvider}&role=${selectedRole}`;
+      window.location.href = `${API_BASE_URL}/api/Account/ExternalLogin?provider=${pendingProvider}&role=${selectedRole}`;
     }
   };
 

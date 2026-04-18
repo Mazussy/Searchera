@@ -1,9 +1,57 @@
 import { apiClient } from "./client";
 
+const extractCollection = (responseBody) => {
+  if (Array.isArray(responseBody)) {
+    return responseBody;
+  }
+
+  if (Array.isArray(responseBody?.data)) {
+    return responseBody.data;
+  }
+
+  if (Array.isArray(responseBody?.items)) {
+    return responseBody.items;
+  }
+
+  if (Array.isArray(responseBody?.result)) {
+    return responseBody.result;
+  }
+
+  if (Array.isArray(responseBody?.value)) {
+    return responseBody.value;
+  }
+
+  return [];
+};
+
+const pickFirst = (obj, keys, fallback = null) => {
+  if (!obj || typeof obj !== "object") {
+    return fallback;
+  }
+
+  for (const key of keys) {
+    if (obj[key] !== undefined && obj[key] !== null) {
+      return obj[key];
+    }
+  }
+
+  return fallback;
+};
+
+const normalizeCategory = (rawCategory = {}) => ({
+  id: pickFirst(rawCategory, ["id", "Id", "categoryId", "CategoryId"]),
+  categoryName: pickFirst(rawCategory, [
+    "categoryName",
+    "CategoryName",
+    "name",
+    "Name",
+  ], "Unnamed category"),
+});
+
 // ── Companies ──────────────────────────────────────────────────────────────
 export const getPendingCompanies = async () => {
   const { data } = await apiClient.get("/api/Admin/GetAllCompaniesArePending");
-  return data;
+  return extractCollection(data);
 };
 
 export const getPendingCompanyById = async (id) => {
@@ -26,7 +74,7 @@ export const rejectCompany = async (id, reason = "") => {
 // ── Jobs ───────────────────────────────────────────────────────────────────
 export const getPendingJobs = async () => {
   const { data } = await apiClient.get("/api/Admin/GetAllJobsArePending");
-  return data;
+  return extractCollection(data);
 };
 
 export const getPendingJobById = async (id) => {
@@ -49,7 +97,7 @@ export const rejectJob = async (id, summary = "") => {
 // ── Categories ─────────────────────────────────────────────────────────────
 export const getAllCategories = async () => {
   const { data } = await apiClient.get("/api/Category/GetAllCategories");
-  return data;
+  return extractCollection(data).map((item) => normalizeCategory(item));
 };
 
 export const addCategory = async (categoryName) => {
@@ -70,10 +118,10 @@ export const deleteCategory = async (id) => {
 // ── Jobs & Companies (public) ──────────────────────────────────────────────
 export const getAllJobs = async () => {
   const { data } = await apiClient.get("/api/Job/GetAllJobs");
-  return data;
+  return extractCollection(data);
 };
 
 export const getAllCompanies = async () => {
   const { data } = await apiClient.get("/api/Company/GetAllCompanies");
-  return data;
+  return extractCollection(data);
 };

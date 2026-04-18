@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const LandingPage = () => {
   return (
     <>
@@ -11,12 +13,18 @@ const LandingPage = () => {
             Search selected jobs, explore companies, and grow your career with
             smart tools built for the Arab job market.
           </p>
-          <button className="w-sm bg-tritary-accent border border-gray-100 p-2 rounded-2xl font-poppins-semibold text-primary cursor-pointer hover:bg-secondary-accent transition-colors">
+          <Link
+            to="/jobs"
+            className="w-sm bg-tritary-accent border border-gray-100 p-2 rounded-2xl font-poppins-semibold text-primary cursor-pointer hover:bg-secondary-accent transition-colors text-center"
+          >
             Search for Jobs
-          </button>
-          <button className="w-sm border border-gray-700 p-2 rounded-2xl font-poppins-semibold text-primary cursor-pointer mb-3 hover:bg-gray-200 transition-colors">
+          </Link>
+          <Link
+            to="/for-employers"
+            className="w-sm border border-gray-700 p-2 rounded-2xl font-poppins-semibold text-primary cursor-pointer mb-3 hover:bg-gray-200 transition-colors text-center"
+          >
             Post a Job (For Employers)
-          </button>
+          </Link>
           <a
             href="#what-can-you-do"
             className="relative group cursor-pointer inline-block hover:bg-[#D9D9D9] px-3 py-2 pb-4 rounded-2xl transition-colors"
@@ -58,12 +66,18 @@ const LandingPage = () => {
           src="../src/assets/images/Landing1.png"
           className="w-full h-48 object-cover rounded-lg"
         ></img>
-        <button className="w-full bg-tritary-accent border border-gray-100 p-3 rounded-2xl font-poppins-semibold text-primary cursor-pointer hover:bg-secondary-accent transition-colors">
+        <Link
+          to="/jobs"
+          className="w-full bg-tritary-accent border border-gray-100 p-3 rounded-2xl font-poppins-semibold text-primary cursor-pointer hover:bg-secondary-accent transition-colors text-center"
+        >
           Search for Jobs
-        </button>
-        <button className="w-full border border-gray-700 p-3 rounded-2xl font-poppins-semibold text-primary cursor-pointer hover:bg-gray-200 transition-colors">
+        </Link>
+        <Link
+          to="/for-employers"
+          className="w-full border border-gray-700 p-3 rounded-2xl font-poppins-semibold text-primary cursor-pointer hover:bg-gray-200 transition-colors text-center"
+        >
           Post a Job (For Employers)
-        </button>
+        </Link>
         <a
           href="#what-can-you-do"
           className="relative group cursor-pointer inline-block hover:bg-[#D9D9D9] px-3 py-2 pb-4 rounded-2xl transition-colors"
