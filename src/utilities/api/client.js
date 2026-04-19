@@ -2,6 +2,7 @@ import axios from "axios";
 
 export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ??
+  // Fallback for local runs and deployments without an injected env var.
   "https://searchera-001-site1.rtempurl.com";
 
 const tokenKeys = ["token", "accessToken", "authToken", "jwt"];
