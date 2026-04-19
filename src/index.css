@@ -7,37 +7,37 @@ html, body, #root {
 
 @font-face {
   font-family: Avro-Regular;
-  src: url(../src/assets/fonts/Arvo-Regular.ttf);
+  src: url(./assets/fonts/Arvo-Regular.ttf);
 }
 
 @font-face {
   font-family: Poppins-Regular;
-  src: url(../src/assets/fonts/Poppins-Regular.ttf);
+  src: url(./assets/fonts/Poppins-Regular.ttf);
 }
 
 @font-face {
   font-family: Poppins-Bold;
-  src: url(../src/assets/fonts/Poppins-Bold.ttf);
+  src: url(./assets/fonts/Poppins-Bold.ttf);
 }
 
 @font-face {
   font-family: Poppins-SemiBold;
-  src: url(../src/assets/fonts/Poppins-SemiBold.ttf);
+  src: url(./assets/fonts/Poppins-SemiBold.ttf);
 }
 
 @font-face {
   font-family: Poppins-Medium;
-  src: url(../src/assets/fonts/Poppins-Medium.ttf);
+  src: url(./assets/fonts/Poppins-Medium.ttf);
 }
 
 @font-face {
   font-family: Alatsi-Regular;
-  src: url(../src/assets/fonts/Alatsi-Regular.ttf);
+  src: url(./assets/fonts/Alatsi-Regular.ttf);
 }
 
 @font-face {
   font-family: Ponnala-Regular;
-  src: url(../src/assets/fonts/Ponnala-Regular.ttf);
+  src: url(./assets/fonts/Ponnala-Regular.ttf);
 }
 
 @theme {

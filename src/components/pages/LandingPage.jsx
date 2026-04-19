@@ -1,10 +1,19 @@
 import { Link } from "react-router-dom";
+import LandingImageOne from "../../assets/images/Landing1.png";
+import LandingImageTwo from "../../assets/images/Landing2.png";
+import SuitcaseIcon from "../../assets/icons/suitcase.png";
+import BusinessTradeIcon from "../../assets/icons/business-and-trade.png";
+import LampIcon from "../../assets/icons/lamp.png";
+import MarketingIcon from "../../assets/icons/marketing.png";
+import JourneyStepOneIcon from "../../assets/icons/1.png";
+import JourneyStepTwoIcon from "../../assets/icons/2.png";
+import JourneyStepThreeIcon from "../../assets/icons/3.png";
 
 const LandingPage = () => {
   return (
     <>
       <div className="hidden md:flex w-full justify-evenly items-center border-b border-b-[#4242425C]/36">
-        <img src="../src/assets/images/Landing1.png"></img>
+        <img src={LandingImageOne} alt="Job seeker illustration" />
         <div className="w-1/3 flex flex-col text-center justify-evenly items-center gap-3">
           <h1 className="font-poppins-bold  text-[28px] text-primary-accent ">
             Find Your Next Career Move with AI-Powered Precision
@@ -50,7 +59,7 @@ const LandingPage = () => {
             </div>
           </a>
         </div>
-        <img src="../src/assets/images/Landing2.png"></img>
+        <img src={LandingImageTwo} alt="Employer and opportunities illustration" />
       </div>
 
       {/* mobile view */}
@@ -63,7 +72,8 @@ const LandingPage = () => {
           smart tools built for the Arab job market.
         </p>
         <img
-          src="../src/assets/images/Landing1.png"
+          src={LandingImageOne}
+          alt="Job seeker illustration"
           className="w-full h-48 object-cover rounded-lg"
         ></img>
         <Link
@@ -112,25 +122,25 @@ const LandingPage = () => {
         </h2>
         <div className="w-full flex justify-evenly items-center mb-15">
           <div className="flex flex-col justify-center items-center gap-3 hover:scale-105 hover:translate-1 transition-all">
-            <img src="../src/assets/icons/suitcase.png"></img>
+            <img src={SuitcaseIcon} alt="Suitcase icon" />
             <p className="font-poppins-semibold text-[#373535] text-sm">
               Find Your Perfect Job
             </p>
           </div>
           <div className="flex flex-col justify-center items-center gap-3 hover:scale-105 hover:translate-1 transition-all">
-            <img src="../src/assets/icons/business-and-trade.png"></img>
+            <img src={BusinessTradeIcon} alt="Business icon" />
             <p className="font-poppins-semibold text-[#373535] text-sm">
               Explore Top Companies
             </p>
           </div>
           <div className="flex flex-col justify-center items-center gap-3 hover:scale-105 hover:translate-1 transition-all">
-            <img src="../src/assets/icons/lamp.png"></img>
+            <img src={LampIcon} alt="Career advice icon" />
             <p className="font-poppins-semibold text-[#373535] text-sm">
               Get Career Advice
             </p>
           </div>
           <div className="flex flex-col justify-center items-center gap-3 hover:scale-105 hover:translate-1 transition-all">
-            <img src="../src/assets/icons/marketing.png"></img>
+            <img src={MarketingIcon} alt="Hiring icon" />
             <p className="font-poppins-semibold text-[#373535] text-sm">
               Post Jobs & Hire Talents
             </p>
@@ -143,7 +153,7 @@ const LandingPage = () => {
         </h2>
         <div className="w-full flex justify-evenly items-center">
           <div className="w-1/4 flex flex-col justify-evenly items-center gap-3 text-center p-3 hover:rounded-2xl hover:bg-[#D9D9D9]/25">
-            <img src="../src/assets/icons/1.png" className="w-20 h-20"></img>
+            <img src={JourneyStepOneIcon} alt="Step one" className="w-20 h-20" />
             <h3 className="font-poppins-semibold text-primary text-md">
               Browse Jobs
             </h3>
@@ -153,7 +163,7 @@ const LandingPage = () => {
             </p>
           </div>
           <div className="w-1/4 flex flex-col justify-evenly items-center gap-3 text-center p-3 hover:rounded-2xl hover:bg-[#D9D9D9]/25">
-            <img src="../src/assets/icons/2.png" className="w-20 h-20"></img>
+            <img src={JourneyStepTwoIcon} alt="Step two" className="w-20 h-20" />
             <h3 className="font-poppins-semibold text-primary text-md">
               Apply Smartly
             </h3>
@@ -163,7 +173,7 @@ const LandingPage = () => {
             </p>
           </div>
           <div className="w-1/4 flex flex-col justify-evenly items-center gap-3 text-center p-3 hover:rounded-2xl hover:bg-[#D9D9D9]/25">
-            <img src="../src/assets/icons/3.png" className="w-20 h-20"></img>
+            <img src={JourneyStepThreeIcon} alt="Step three" className="w-20 h-20" />
             <h3 className="font-poppins-semibold text-primary text-md">
               Get Faster Matches
             </h3>
