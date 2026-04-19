@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import Login1 from "../../assets/icons/login1.png";
-import Login2 from "../../assets/icons/login2.png";
-import Login3 from "../../assets/icons/login3.png";
-import Login4 from "../../assets/icons/login4.png";
-import Login5 from "../../assets/icons/login5.png";
+import Login1 from "../../assets/icons/Login1.png";
+import Login2 from "../../assets/icons/Login2.png";
+import Login3 from "../../assets/icons/Login3.png";
+import Login4 from "../../assets/icons/Login4.png";
+import Login5 from "../../assets/icons/Login5.png";
 import { Link } from "react-router-dom";
 
 function Navbar() {
