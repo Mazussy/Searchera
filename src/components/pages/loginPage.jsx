@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { login } from "../../utilities/api/authApi";
 import { API_BASE_URL } from "../../utilities/api/client";
+import GoogleIcon from "../../assets/images/Google__G__logo.svg.png";
+import LinkedInIcon from "../../assets/images/LinkedIn_icon.svg.png";
+import AuthHero from "../../assets/images/72be0103c7bc9699eb45bcda9cc0d1c0fd2b75fa.jpg";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -160,7 +163,7 @@ const LoginPage = () => {
                                hover:bg-gray-100 transition flex items-center justify-center gap-2"
             >
               <img
-                src="src/assets/images/Google__G__logo.svg.png"
+                src={GoogleIcon}
                 alt="Google"
                 className="w-4 h-4"
               />
@@ -173,7 +176,7 @@ const LoginPage = () => {
                                hover:bg-gray-100 transition flex items-center justify-center gap-2"
             >
               <img
-                src="src/assets/images/LinkedIn_icon.svg.png"
+                src={LinkedInIcon}
                 alt="LinkedIn"
                 className="w-4 h-4"
               />
@@ -198,7 +201,7 @@ const LoginPage = () => {
       {/* RIGHT SECTION */}
       <div className="right-section relative h-screen bg-gray-100 hidden md:block">
         <img
-          src="src/assets/images/72be0103c7bc9699eb45bcda9cc0d1c0fd2b75fa.jpg"
+          src={AuthHero}
           alt="Decorative"
           className="w-full h-full object-cover object-[center_95%]"
         />

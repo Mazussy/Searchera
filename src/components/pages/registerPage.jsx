@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { register } from "../../utilities/api/authApi";
 import { API_BASE_URL } from "../../utilities/api/client";
+import GoogleIcon from "../../assets/images/Google__G__logo.svg.png";
+import LinkedInIcon from "../../assets/images/LinkedIn_icon.svg.png";
+import AuthHero from "../../assets/images/72be0103c7bc9699eb45bcda9cc0d1c0fd2b75fa.jpg";
 
 // ── password strength checker ─────────────────────────────────────────────
 const passwordRules = [
@@ -357,12 +360,12 @@ const RegisterPage = () => {
           <div className="flex gap-3">
             <button type="button" onClick={() => handleExternalLogin("Google")}
               className="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm hover:bg-gray-50 transition flex items-center justify-center gap-2 font-poppins">
-              <img src="src/assets/images/Google__G__logo.svg.png" alt="Google" className="w-4 h-4" />
+              <img src={GoogleIcon} alt="Google" className="w-4 h-4" />
               Google
             </button>
             <button type="button" onClick={() => handleExternalLogin("LinkedIn")}
               className="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm hover:bg-gray-50 transition flex items-center justify-center gap-2 font-poppins">
-              <img src="src/assets/images/LinkedIn_icon.svg.png" alt="LinkedIn" className="w-4 h-4" />
+              <img src={LinkedInIcon} alt="LinkedIn" className="w-4 h-4" />
               LinkedIn
             </button>
           </div>
@@ -376,7 +379,7 @@ const RegisterPage = () => {
 
       {/* ── RIGHT ── */}
       <div className="right-section relative h-full bg-gray-100 hidden md:block overflow-hidden sticky top-0 max-h-screen">
-        <img src="src/assets/images/72be0103c7bc9699eb45bcda9cc0d1c0fd2b75fa.jpg"
+        <img src={AuthHero}
           alt="Decorative" className="absolute inset-0 w-full h-full object-cover object-[center_95%]" />
         <div className="absolute inset-0 bg-white/10" />
       </div>
