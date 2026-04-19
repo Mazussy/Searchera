@@ -10,7 +10,7 @@ import {
   Sparkles,
   Trash2,
 } from "lucide-react";
-import { createJob, getAllCategories } from "../../utilities/api/jobsApi";
+import { createJob, getAllCategories, searchJobSkills } from "../../utilities/api/jobsApi";
 import { createCompany } from "../../utilities/api/companiesApi";
 import { getProfile } from "../../utilities/api/profileApi";
 import { addSkill, deleteSkill, getAllSkills } from "../../utilities/api/skillsApi";
@@ -24,6 +24,7 @@ const defaultFormState = {
   salaryRange: "",
   location: "",
   deadline: "",
+  skillIds: [],
 };
 
 const defaultCompanyForm = {
@@ -184,6 +185,9 @@ const ForEmployersPage = () => {
   const [companyApiError, setCompanyApiError] = useState("");
   const [companySuccessMessage, setCompanySuccessMessage] = useState("");
   const [skillsApiError, setSkillsApiError] = useState("");
+  const [jobSkillQuery, setJobSkillQuery] = useState("");
+  const [jobSkillResults, setJobSkillResults] = useState([]);
+  const [isSearchingJobSkills, setIsSearchingJobSkills] = useState(false);
 
   const isLoggedIn = Boolean(localStorage.getItem("token"));
   const roleFromStorage = localStorage.getItem("userType") || localStorage.getItem("role") || "";
@@ -291,6 +295,88 @@ const ForEmployersPage = () => {
     return date.toISOString().split("T")[0];
   }, []);
 
+  const selectedJobSkills = useMemo(() => {
+    const byId = new Map();
+
+    for (const skill of skills) {
+      if (skill?.id) {
+        byId.set(String(skill.id), skill);
+      }
+    }
+
+    for (const skill of jobSkillResults) {
+      if (skill?.id) {
+        byId.set(String(skill.id), skill);
+      }
+    }
+
+    return jobFormData.skillIds
+      .map((id) => {
+        const normalizedId = String(id);
+        return byId.get(normalizedId) || { id: normalizedId, skillName: "Selected skill" };
+      })
+      .filter(Boolean);
+  }, [jobFormData.skillIds, skills, jobSkillResults]);
+
+  useEffect(() => {
+    let isActive = true;
+    const term = jobSkillQuery.trim();
+
+    if (!term) {
+      setJobSkillResults([]);
+      setIsSearchingJobSkills(false);
+      return () => {
+        isActive = false;
+      };
+    }
+
+    const timeoutId = window.setTimeout(async () => {
+      setIsSearchingJobSkills(true);
+
+      try {
+        const result = await searchJobSkills(term);
+
+        if (!isActive) {
+          return;
+        }
+
+        const selectedIds = new Set(jobFormData.skillIds.map((id) => String(id)));
+        const deduped = [];
+        const seen = new Set();
+
+        for (const item of result) {
+          const id = item.id ? String(item.id) : "";
+          const name = String(item.skillName || "").trim();
+          const dedupeKey = id || name.toLowerCase();
+
+          if (!name || !dedupeKey || seen.has(dedupeKey) || (id && selectedIds.has(id))) {
+            continue;
+          }
+
+          seen.add(dedupeKey);
+          deduped.push(item);
+        }
+
+        setJobSkillResults(deduped);
+      } catch {
+        if (!isActive) {
+          return;
+        }
+
+        setJobSkillResults([]);
+      } finally {
+        if (isActive) {
+          setIsSearchingJobSkills(false);
+        }
+      }
+    }, 250);
+
+    return () => {
+      isActive = false;
+      window.clearTimeout(timeoutId);
+    };
+  }, [jobSkillQuery, jobFormData.skillIds]);
+
   const handleJobFieldChange = (field, value) => {
     setJobFormData((previous) => ({
       ...previous,
@@ -335,6 +421,39 @@ const ForEmployersPage = () => {
     }
   };
 
+  const handleSelectJobSkill = (skill) => {
+    const id = skill?.id ? String(skill.id) : "";
+
+    if (!id) {
+      return;
+    }
+
+    setJobFormData((previous) => {
+      const exists = previous.skillIds.some((item) => String(item) === id);
+
+      if (exists) {
+        return previous;
+      }
+
+      return {
+        ...previous,
+        skillIds: [...previous.skillIds, id],
+      };
+    });
+
+    setJobSkillQuery("");
+    setJobSkillResults([]);
+  };
+
+  const handleRemoveJobSkill = (skillId) => {
+    const normalizedId = String(skillId);
+
+    setJobFormData((previous) => ({
+      ...previous,
+      skillIds: previous.skillIds.filter((id) => String(id) !== normalizedId),
+    }));
+  };
+
   const handleJobSubmit = async (event) => {
     event.preventDefault();
 
@@ -364,9 +483,12 @@ const ForEmployersPage = () => {
         salaryRange: jobFormData.salaryRange.trim(),
         location: jobFormData.location.trim(),
         deadline: jobFormData.deadline,
+        skillIds: jobFormData.skillIds,
       });
 
       setJobFormData(defaultFormState);
+      setJobSkillQuery("");
+      setJobSkillResults([]);
       setJobSuccessMessage("Job posted successfully. It is now pending admin approval.");
     } catch (error) {
       setJobApiError(parseApiError(error));
@@ -577,6 +699,60 @@ const ForEmployersPage = () => {
               )}
             </label>
 
+            <div className="md:col-span-2">
+              <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Required skills (optional)</span>
+              <input
+                type="text"
+                value={jobSkillQuery}
+                onChange={(event) => setJobSkillQuery(event.target.value)}
+                placeholder="Search skills like React, JavaScript, Figma"
+                className={fieldClass(false)}
+              />
+
+              {jobSkillQuery.trim() && (
+                <div className="mt-2 max-h-44 overflow-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                  {isSearchingJobSkills ? (
+                    <p className="px-3 py-2 text-sm font-poppins text-[#7A7A7A]">Searching skills...</p>
+                  ) : jobSkillResults.length === 0 ? (
+                    <p className="px-3 py-2 text-sm font-poppins text-[#7A7A7A]">No matching skills found.</p>
+                  ) : (
+                    jobSkillResults.map((skill, index) => (
+                      <button
+                        key={skill.id ?? `${skill.skillName}-${index}`}
+                        type="button"
+                        onClick={() => handleSelectJobSkill(skill)}
+                        className="flex w-full items-center justify-between px-3 py-2 text-left text-sm font-poppins text-[#1A1A1A] transition-colors hover:bg-[#FFF6F2]"
+                      >
+                        <span>{skill.skillName}</span>
+                        <span className="text-xs font-poppins-medium text-primary-accent">Add</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {selectedJobSkills.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {selectedJobSkills.map((skill) => (
+                    <span
+                      key={skill.id}
+                      className="inline-flex items-center gap-2 rounded-full border border-primary-accent/25 bg-[#FFF6F2] px-3 py-1 text-xs font-poppins-medium text-[#A04416]"
+                    >
+                      {skill.skillName}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveJobSkill(skill.id)}
+                        className="text-primary-accent transition-colors hover:text-[#B8461A]"
+                        aria-label={`Remove ${skill.skillName}`}
+                      >
+                        x
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <label>
               <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Job type</span>
               <select
@@ -689,6 +865,8 @@ const ForEmployersPage = () => {
               type="button"
               onClick={() => {
                 setJobFormData(defaultFormState);
+                setJobSkillQuery("");
+                setJobSkillResults([]);
                 setJobFormErrors({});
                 setJobApiError("");
                 setJobSuccessMessage("");

@@ -160,12 +160,44 @@ const normalizeCategory = (rawCategory = {}) => ({
   ], "Unnamed category"),
 });
 
+const normalizeSkill = (rawSkill) => {
+  if (typeof rawSkill === "string") {
+    return {
+      id: null,
+      skillName: rawSkill,
+    };
+  }
+
+  return {
+    id: pickFirst(rawSkill, ["id", "Id", "skillId", "SkillId"]),
+    skillName: pickFirst(rawSkill, ["skillName", "SkillName", "name", "Name"], "Untitled skill"),
+  };
+};
+
 export const getAllCategories = async () => {
   const { data } = await apiClient.get("/api/Category/GetAllCategories");
 
   return extractCollection(data)
     .map((item) => normalizeCategory(item))
     .filter((item) => item.id);
+};
+
+export const searchJobSkills = async (term) => {
+  const normalizedTerm = String(term ?? "").trim();
+
+  if (!normalizedTerm) {
+    return [];
+  }
+
+  const { data } = await apiClient.get(JOB_ENDPOINTS.searchSkills, {
+    params: {
+      term: normalizedTerm,
+    },
+  });
+
+  return extractCollection(data)
+    .map((item) => normalizeSkill(item))
+    .filter((item) => item.id || item.skillName);
 };
 
 export const createJob = async (payload) => {
@@ -183,6 +215,15 @@ export const createJob = async (payload) => {
   formData.append("SalaryRange", String(payload.salaryRange).trim());
   formData.append("Location", String(payload.location).trim());
   formData.append("Deadline", String(payload.deadline));
+
+  if (Array.isArray(payload.skillIds) && payload.skillIds.length > 0) {
+    payload.skillIds
+      .map((item) => String(item).trim())
+      .filter(Boolean)
+      .forEach((skillId) => {
+        formData.append("SkillIds", skillId);
+      });
+  }
 
   // Let the browser/axios set multipart boundary automatically.
   const { data } = await apiClient.post(JOB_ENDPOINTS.createJob, formData);
