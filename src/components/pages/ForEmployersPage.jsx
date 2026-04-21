@@ -7,13 +7,11 @@ import {
   CheckCircle2,
   CircleAlert,
   Plus,
-  Sparkles,
-  Trash2,
 } from "lucide-react";
 import { createJob, getAllCategories, searchJobSkills } from "../../utilities/api/jobsApi";
 import { createCompany } from "../../utilities/api/companiesApi";
 import { getProfile } from "../../utilities/api/profileApi";
-import { addSkill, deleteSkill, getAllSkills } from "../../utilities/api/skillsApi";
+import { addSkill, getAllSkills } from "../../utilities/api/skillsApi";
 
 const defaultFormState = {
   categoryId: "",
@@ -143,7 +141,12 @@ const validateCompanyForm = (formData) => {
 
   if (formData.website.trim()) {
     try {
-      const parsedUrl = new URL(formData.website.trim());
+      const normalizedWebsite =
+        /^https?:\/\//i.test(formData.website.trim())
+          ? formData.website.trim()
+          : `https://${formData.website.trim()}`;
+
+      const parsedUrl = new URL(normalizedWebsite);
 
       if (!parsedUrl.protocol.startsWith("http")) {
         errors.website = "Website must start with http:// or https://.";
@@ -171,11 +174,9 @@ const ForEmployersPage = () => {
   const [companyFormErrors, setCompanyFormErrors] = useState({});
   const [categories, setCategories] = useState([]);
   const [skills, setSkills] = useState([]);
-  const [newSkillName, setNewSkillName] = useState("");
   const [employerId, setEmployerId] = useState("");
   const [userRole, setUserRole] = useState("");
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
-  const [isLoadingSkills, setIsLoadingSkills] = useState(true);
   const [isResolvingProfile, setIsResolvingProfile] = useState(true);
   const [isSubmittingJob, setIsSubmittingJob] = useState(false);
   const [isSubmittingCompany, setIsSubmittingCompany] = useState(false);
@@ -191,7 +192,13 @@ const ForEmployersPage = () => {
 
   const isLoggedIn = Boolean(localStorage.getItem("token"));
   const roleFromStorage = localStorage.getItem("userType") || localStorage.getItem("role") || "";
-  const isEmployer = (userRole || roleFromStorage).toLowerCase() === "employer";
+  const normalizedResolvedRole = String(userRole || "").trim().toLowerCase();
+  const normalizedStoredRole = String(roleFromStorage || "").trim().toLowerCase();
+  const hasEmployerId = Boolean(String(employerId || "").trim());
+  const isEmployer =
+    normalizedResolvedRole === "employer" ||
+    normalizedStoredRole === "employer" ||
+    (!normalizedResolvedRole && !normalizedStoredRole && hasEmployerId);
 
   useEffect(() => {
     let isActive = true;
@@ -222,7 +229,6 @@ const ForEmployersPage = () => {
     };
 
     const loadSkills = async () => {
-      setIsLoadingSkills(true);
       setSkillsApiError("");
 
       try {
@@ -239,10 +245,6 @@ const ForEmployersPage = () => {
         }
 
         setSkillsApiError("Could not load skills right now.");
-      } finally {
-        if (isActive) {
-          setIsLoadingSkills(false);
-        }
       }
     };
 
@@ -262,8 +264,8 @@ const ForEmployersPage = () => {
         }
 
         const profile = resolveProfileObject(response);
-        const id = pickFirst(profile, ["id", "Id", "userId", "UserId", "employerId", "EmployerId"], "");
-        const role = pickFirst(profile, ["userType", "UserType", "role", "Role"], "");
+        const id = pickFirst(profile, ["employerId", "EmployerId", "id", "Id", "userId", "UserId"], "");
+        const role = pickFirst(profile, ["userType", "UserType", "role", "Role", "accountType", "AccountType", "userRole", "UserRole", "type", "Type"], "");
 
         setEmployerId(id ? String(id) : "");
         setUserRole(role ? String(role) : "");
@@ -454,6 +456,53 @@ const ForEmployersPage = () => {
     }));
   };
 
+  const handleAddSkillFromJobQuery = async () => {
+    const requestedSkill = jobSkillQuery.trim();
+
+    if (!requestedSkill) {
+      return;
+    }
+
+    if (!isEmployer) {
+      setSkillsApiError("Only Employer accounts can add skills while posting a job.");
+      return;
+    }
+
+    const normalizedRequestedSkill = requestedSkill.toLowerCase();
+    const existingSkill = skills.find(
+      (skill) => String(skill?.skillName || "").trim().toLowerCase() === normalizedRequestedSkill,
+    );
+
+    if (existingSkill?.id) {
+      handleSelectJobSkill(existingSkill);
+      setSkillsApiError("");
+      return;
+    }
+
+    setIsSubmittingSkill(true);
+    setSkillsApiError("");
+
+    try {
+      await addSkill(requestedSkill);
+      const updatedSkills = await getAllSkills();
+      setSkills(updatedSkills);
+
+      const createdSkill = updatedSkills.find(
+        (skill) => String(skill?.skillName || "").trim().toLowerCase() === normalizedRequestedSkill,
+      );
+
+      if (createdSkill?.id) {
+        handleSelectJobSkill(createdSkill);
+      } else {
+        setSkillsApiError("Skill added, but it could not be auto-selected. Search again to attach it.");
+      }
+    } catch (error) {
+      setSkillsApiError(parseApiError(error));
+    } finally {
+      setIsSubmittingSkill(false);
+    }
+  };
+
   const handleJobSubmit = async (event) => {
     event.preventDefault();
 
@@ -527,7 +576,11 @@ const ForEmployersPage = () => {
         companyName: companyFormData.companyName,
         description: companyFormData.description,
         industry: companyFormData.industry,
-        website: companyFormData.website,
+        website: companyFormData.website.trim()
+          ? (/^https?:\/\//i.test(companyFormData.website.trim())
+              ? companyFormData.website.trim()
+              : `https://${companyFormData.website.trim()}`)
+          : "",
         logoFile: companyFormData.logoFile,
       });
 
@@ -537,46 +590,6 @@ const ForEmployersPage = () => {
       setCompanyApiError(parseApiError(error));
     } finally {
       setIsSubmittingCompany(false);
-    }
-  };
-
-  const handleAddSkill = async () => {
-    if (!newSkillName.trim()) {
-      return;
-    }
-
-    if (!isEmployer) {
-      setSkillsApiError("Only Employer accounts can manage skills in this section.");
-      return;
-    }
-
-    setIsSubmittingSkill(true);
-    setSkillsApiError("");
-
-    try {
-      await addSkill(newSkillName.trim());
-      const updated = await getAllSkills();
-      setSkills(updated);
-      setNewSkillName("");
-    } catch (error) {
-      setSkillsApiError(parseApiError(error));
-    } finally {
-      setIsSubmittingSkill(false);
-    }
-  };
-
-  const handleDeleteSkill = async (id) => {
-    if (!id) {
-      return;
-    }
-
-    setSkillsApiError("");
-
-    try {
-      await deleteSkill(id);
-      setSkills((previous) => previous.filter((skill) => skill.id !== id));
-    } catch (error) {
-      setSkillsApiError(parseApiError(error));
     }
   };
 
@@ -632,12 +645,11 @@ const ForEmployersPage = () => {
       </section>
 
       <section className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <div className="rounded-2xl border border-[#4242425C]/20 bg-white p-2 shadow-sm">
+        <div className="rounded-2xl border border-[#4242425C]/20 bg-white p-2 shadow-sm lg:col-span-2">
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {[
               { id: "job", label: "Post Job", icon: BriefcaseBusiness },
               { id: "company", label: "Create Company", icon: Building2 },
-              { id: "skills", label: "Skills", icon: Sparkles },
             ].map((item) => {
               const Icon = item.icon;
               return (
@@ -662,7 +674,7 @@ const ForEmployersPage = () => {
         {activeSection === "job" && (
           <form
             onSubmit={handleJobSubmit}
-            className="rounded-2xl border border-[#4242425C]/20 bg-white p-5 shadow-sm md:p-7 lg:col-span-1"
+            className="rounded-2xl border border-[#4242425C]/20 bg-white p-5 shadow-sm md:p-7 lg:col-start-1"
           >
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <label className="md:col-span-2">
@@ -701,13 +713,42 @@ const ForEmployersPage = () => {
 
             <div className="md:col-span-2">
               <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Required skills (optional)</span>
-              <input
-                type="text"
-                value={jobSkillQuery}
-                onChange={(event) => setJobSkillQuery(event.target.value)}
-                placeholder="Search skills like React, JavaScript, Figma"
-                className={fieldClass(false)}
-              />
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={jobSkillQuery}
+                  onChange={(event) => {
+                    setJobSkillQuery(event.target.value);
+
+                    if (skillsApiError) {
+                      setSkillsApiError("");
+                    }
+                  }}
+                  placeholder="Search skills like React, JavaScript, Figma"
+                  className={fieldClass(false)}
+                />
+                <button
+                  type="button"
+                  onClick={handleAddSkillFromJobQuery}
+                  disabled={isSubmittingSkill || !jobSkillQuery.trim() || !isEmployer}
+                  className="inline-flex h-[42px] w-[42px] flex-shrink-0 items-center justify-center rounded-xl border border-primary-accent/25 bg-[#FFF6F2] text-primary-accent transition-colors hover:bg-[#FFECE3] disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label="Add skill"
+                  title="Add skill from your search term"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+
+              <p className="mt-2 text-xs font-poppins text-[#7A7A7A]">
+                Can't find a skill? Type it and click + to add it, then we will attach it to this job.
+              </p>
+
+              {skillsApiError && (
+                <p className="mt-2 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-poppins text-red-700">
+                  <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+                  {skillsApiError}
+                </p>
+              )}
 
               {jobSkillQuery.trim() && (
                 <div className="mt-2 max-h-44 overflow-auto rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -882,7 +923,7 @@ const ForEmployersPage = () => {
         {activeSection === "company" && (
           <form
             onSubmit={handleCompanySubmit}
-            className="rounded-2xl border border-[#4242425C]/20 bg-white p-5 shadow-sm md:p-7"
+            className="rounded-2xl border border-[#4242425C]/20 bg-white p-5 shadow-sm md:p-7 lg:col-start-1"
           >
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <label className="md:col-span-2">
@@ -987,68 +1028,7 @@ const ForEmployersPage = () => {
           </form>
         )}
 
-        {activeSection === "skills" && (
-          <div className="rounded-2xl border border-[#4242425C]/20 bg-white p-5 shadow-sm md:p-7">
-            <div className="flex flex-wrap items-end gap-3">
-              <label className="w-full min-w-0 sm:min-w-[220px] sm:flex-1">
-                <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Add skill</span>
-                <input
-                  type="text"
-                  value={newSkillName}
-                  onChange={(event) => setNewSkillName(event.target.value)}
-                  placeholder="React"
-                  className={fieldClass(false)}
-                />
-              </label>
-              <button
-                type="button"
-                onClick={handleAddSkill}
-                disabled={isSubmittingSkill || !newSkillName.trim() || !isEmployer}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#D3571F] px-5 py-2.5 text-sm font-poppins-medium text-white transition-colors hover:bg-[#B8461A] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-              >
-                <Plus className="h-4 w-4" />
-                Add Skill
-              </button>
-            </div>
-
-            {skillsApiError && (
-              <p className="mt-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-poppins text-red-700">
-                <CircleAlert className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                {skillsApiError}
-              </p>
-            )}
-
-            <div className="mt-5 space-y-2">
-              {isLoadingSkills ? (
-                <p className="text-sm font-poppins text-[#7A7A7A]">Loading skills...</p>
-              ) : skills.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-gray-200 bg-[#FAFAFA] px-4 py-3 text-sm font-poppins text-[#7A7A7A]">
-                  No skills added yet.
-                </p>
-              ) : (
-                skills.map((skill, index) => (
-                  <div
-                    key={skill.id ?? `${skill.skillName}-${index}`}
-                    className="flex items-center justify-between rounded-xl border border-[#4242425C]/20 px-4 py-2.5"
-                  >
-                    <span className="text-sm font-poppins-medium text-[#1A1A1A]">{skill.skillName}</span>
-                    <button
-                      type="button"
-                      disabled={!skill.id}
-                      onClick={() => handleDeleteSkill(skill.id)}
-                      className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-poppins-medium text-red-500 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:text-gray-300"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      Delete
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        )}
-
-        <aside className="space-y-4">
+        <aside className="space-y-4 lg:col-start-2 lg:row-start-2">
           <div className="rounded-2xl border border-[#4242425C]/20 bg-white p-5 shadow-sm">
             <h2 className="text-base font-poppins-semibold text-[#1A1A1A]">Before You Submit</h2>
             <ul className="mt-3 space-y-2 text-sm font-poppins text-[#4A4A4A]">

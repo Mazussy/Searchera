@@ -12,6 +12,7 @@ import {
   deleteCategory,
   getAllJobs,
 } from "../../utilities/api/adminApi";
+import { getAllSkills, addSkill, deleteSkill } from "../../utilities/api/skillsApi";
 
 // ── helpers ────────────────────────────────────────────────────────────────
 const Badge = ({ children, color = "orange" }) => {
@@ -120,12 +121,43 @@ const CategoryModal = ({ category, onConfirm, onClose }) => {
   );
 };
 
+const SkillModal = ({ onConfirm, onClose }) => {
+  const [name, setName] = useState("");
+
+  return (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+        <h3 className="font-poppins-semibold text-[#1a1a1a] mb-4">Add Skill</h3>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Skill name"
+          className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-poppins focus:outline-none focus:ring-2 focus:ring-[#D3571F]/40"
+        />
+        <div className="flex gap-3 mt-5">
+          <button onClick={onClose} className="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-poppins-medium text-gray-600 hover:bg-gray-50 transition-colors">
+            Cancel
+          </button>
+          <button
+            onClick={() => name.trim().length >= 2 && onConfirm(name.trim())}
+            disabled={name.trim().length < 2}
+            className="flex-1 rounded-xl bg-[#D3571F] py-2.5 text-sm font-poppins-medium text-white hover:bg-[#B8461A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ── Tabs ───────────────────────────────────────────────────────────────────
 const tabs = [
   { id: "overview",   label: "Overview",   icon: "⊞" },
   { id: "jobs",       label: "Pending Jobs",       icon: "💼" },
   { id: "companies",  label: "Pending Companies",  icon: "🏢" },
   { id: "categories", label: "Categories",  icon: "🏷️" },
+  { id: "skills", label: "Skills", icon: "✨" },
 ];
 
 // ── Main Component ─────────────────────────────────────────────────────────
@@ -134,12 +166,14 @@ const AdminDashboard = () => {
   const [pendingJobs, setPendingJobs] = useState([]);
   const [pendingCompanies, setPendingCompanies] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [skills, setSkills] = useState([]);
   const [allJobs, setAllJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [toast, setToast] = useState(null);
   const [rejectModal, setRejectModal] = useState(null); // { type, id, name }
   const [categoryModal, setCategoryModal] = useState(null); // null | { category? }
+  const [skillModal, setSkillModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const showToast = (message, type = "success") => {
@@ -150,15 +184,17 @@ const AdminDashboard = () => {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [pJobs, pCompanies, cats, aJobs] = await Promise.allSettled([
+      const [pJobs, pCompanies, cats, skillsResult, aJobs] = await Promise.allSettled([
         getPendingJobs(),
         getPendingCompanies(),
         getAllCategories(),
+        getAllSkills(),
         getAllJobs(),
       ]);
       if (pJobs.status === "fulfilled")      setPendingJobs(Array.isArray(pJobs.value) ? pJobs.value : []);
       if (pCompanies.status === "fulfilled") setPendingCompanies(Array.isArray(pCompanies.value) ? pCompanies.value : []);
       if (cats.status === "fulfilled")       setCategories(Array.isArray(cats.value) ? cats.value : []);
+      if (skillsResult.status === "fulfilled") setSkills(Array.isArray(skillsResult.value) ? skillsResult.value : []);
       if (aJobs.status === "fulfilled")      setAllJobs(Array.isArray(aJobs.value) ? aJobs.value : []);
     } catch {
       showToast("Failed to load data", "error");
@@ -244,6 +280,36 @@ const AdminDashboard = () => {
       setCategories((prev) => prev.filter((c) => (c.id ?? c.categoryId) !== id));
       showToast("Category deleted");
     } catch { showToast("Failed to delete category", "error"); }
+  };
+
+  const handleAddSkill = async (name) => {
+    setSkillModal(false);
+    try {
+      await addSkill(name);
+      const updatedSkills = await getAllSkills();
+      setSkills(Array.isArray(updatedSkills) ? updatedSkills : []);
+      showToast("Skill added ✓");
+    } catch (error) {
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.title ||
+        "Failed to add skill";
+      showToast(message, "error");
+    }
+  };
+
+  const handleDeleteSkill = async (id) => {
+    if (!id) {
+      return;
+    }
+
+    try {
+      await deleteSkill(id);
+      setSkills((prev) => prev.filter((skill) => (skill.id ?? skill.skillId) !== id));
+      showToast("Skill deleted");
+    } catch {
+      showToast("Failed to delete skill", "error");
+    }
   };
 
   // ── Render ─────────────────────────────────────────────────────────────
@@ -347,21 +413,23 @@ const AdminDashboard = () => {
               {/* ── OVERVIEW ── */}
               {activeTab === "overview" && (
                 <div className="space-y-8">
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                     <StatCard icon="💼" label="Pending Jobs"      value={pendingJobs.length}      sub="Awaiting review"   accent />
                     <StatCard icon="🏢" label="Pending Companies" value={pendingCompanies.length} sub="Awaiting review" />
                     <StatCard icon="📋" label="Total Jobs"        value={allJobs.length}          sub="All listed jobs" />
                     <StatCard icon="🏷️" label="Categories"        value={categories.length}       sub="Active categories" />
+                    <StatCard icon="✨" label="Skills"             value={skills.length}           sub="Available skills" />
                   </div>
 
                   {/* Quick action tiles */}
                   <div>
                     <SectionHeader title="Quick Actions" />
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       {[
                         { label: "Review Pending Jobs",       sub: `${pendingJobs.length} jobs need attention`,       tab: "jobs",       icon: "💼", urgent: pendingJobs.length > 0 },
                         { label: "Review Pending Companies",  sub: `${pendingCompanies.length} companies need review`, tab: "companies",  icon: "🏢", urgent: pendingCompanies.length > 0 },
                         { label: "Manage Categories",         sub: `${categories.length} categories active`,           tab: "categories", icon: "🏷️", urgent: false },
+                        { label: "Manage Skills",             sub: `${skills.length} skills available`,                tab: "skills",     icon: "✨", urgent: false },
                       ].map((action) => (
                         <button
                           key={action.tab}
@@ -586,6 +654,50 @@ const AdminDashboard = () => {
                   )}
                 </div>
               )}
+
+              {activeTab === "skills" && (
+                <div>
+                  <div className="flex items-center justify-between mb-5">
+                    <SectionHeader title="Skills" count={skills.length} />
+                    <button
+                      onClick={() => setSkillModal(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#D3571F] text-white text-sm font-poppins-medium rounded-xl hover:bg-[#B8461A] transition-colors"
+                    >
+                      <span>+</span> Add Skill
+                    </button>
+                  </div>
+
+                  {skills.length === 0 ? (
+                    <EmptyState icon="✨" message="No skills yet. Add one to get started." />
+                  ) : (
+                    <div className="bg-white border border-[#4242425C]/20 rounded-2xl overflow-hidden">
+                      <div className="grid grid-cols-[1fr_auto] gap-0 divide-y divide-[#4242425C]/10">
+                        {skills.map((skill, i) => {
+                          const id = skill.id ?? skill.skillId;
+                          return (
+                            <React.Fragment key={id ?? i}>
+                              <div className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50 transition-colors">
+                                <div className="w-7 h-7 bg-[#FFECE3] rounded-lg flex items-center justify-center text-[11px] text-[#D3571F] font-poppins-bold flex-shrink-0">
+                                  {(i + 1).toString().padStart(2, "0")}
+                                </div>
+                                <span className="text-sm font-poppins-medium text-[#1a1a1a]">{skill.skillName}</span>
+                              </div>
+                              <div className="flex items-center gap-2 px-5 py-3.5 hover:bg-gray-50 transition-colors justify-end">
+                                <button
+                                  onClick={() => handleDeleteSkill(id)}
+                                  className="text-xs font-poppins-medium text-gray-400 hover:text-red-500 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </React.Fragment>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </>
           )}
         </main>
@@ -626,6 +738,13 @@ const AdminDashboard = () => {
               ? handleEditCategory(categoryModal.category.id ?? categoryModal.category.categoryId, name)
               : handleAddCategory(name)
           }
+        />
+      )}
+
+      {skillModal && (
+        <SkillModal
+          onClose={() => setSkillModal(false)}
+          onConfirm={handleAddSkill}
         />
       )}
     </div>

@@ -32,6 +32,8 @@ export const createCompany = async (payload) => {
     formData.append("LogoFile", payload.logoFile);
   }
 
-  const { data } = await apiClient.post("/api/Company/AddCompany", formData);
+  const { data } = await apiClient.post("/api/Company/AddCompany", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return data;
 };
