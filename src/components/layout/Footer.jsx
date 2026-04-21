@@ -8,15 +8,15 @@ import Tiktok2 from "../../assets/icons/Tiktok2.png";
 
 const Footer = () => {
   return (
-    <div className="w-full flex justify-evenly items-center pt-5 pb-5">
-      <div className="flex gap-10">
+    <div className="w-full flex flex-col items-center gap-5 px-4 py-6 sm:flex-row sm:justify-evenly sm:gap-0 sm:px-0 sm:py-5">
+      <div className="flex gap-6 sm:gap-10">
         <a
           href="https://facebook.com"
           target="_blank"
           rel="noopener noreferrer"
         >
           <img
-            className="w-10 h-10"
+            className="h-9 w-9 sm:h-10 sm:w-10"
             src={FB1}
             onMouseEnter={(event) => {
               event.currentTarget.src = FB2;
@@ -33,7 +33,7 @@ const Footer = () => {
           rel="noopener noreferrer"
         >
           <img
-            className="w-10 h-10"
+            className="h-9 w-9 sm:h-10 sm:w-10"
             src={Insta1}
             onMouseEnter={(event) => {
               event.currentTarget.src = Insta2;
@@ -46,7 +46,7 @@ const Footer = () => {
         </a>
         <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer">
           <img
-            className="w-10 h-10"
+            className="h-9 w-9 sm:h-10 sm:w-10"
             src={Tiktok1}
             onMouseEnter={(event) => {
               event.currentTarget.src = Tiktok2;
@@ -58,7 +58,7 @@ const Footer = () => {
           ></img>
         </a>
       </div>
-      <div className="flex gap-10">
+      <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 sm:flex-nowrap sm:justify-start sm:gap-10">
         <p className="font-alatsi text-primary text-[17px] hover:text-[#FF996C] transition-colors">
           SEARCHERA
         </p>

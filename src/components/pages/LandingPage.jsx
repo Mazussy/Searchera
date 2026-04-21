@@ -115,12 +115,12 @@ const LandingPage = () => {
       </div>
       <div
         id="what-can-you-do"
-        className="w-full flex flex-col items-center gap-15 pt-10 border-b border-b-[#4242425C]/36"
+        className="w-full flex flex-col items-center gap-10 px-4 pt-8 md:gap-15 md:px-0 md:pt-10 border-b border-b-[#4242425C]/36"
       >
         <h2 className="font-ponnala text-[#373535] border-b border-b-[#4242425C]/36">
           What Can You Do
         </h2>
-        <div className="w-full flex justify-evenly items-center mb-15">
+        <div className="w-full grid grid-cols-2 gap-8 pb-10 md:flex md:justify-evenly md:items-center md:gap-0 md:pb-0 mb-15">
           <div className="flex flex-col justify-center items-center gap-3 hover:scale-105 hover:translate-1 transition-all">
             <img src={SuitcaseIcon} alt="Suitcase icon" />
             <p className="font-poppins-semibold text-[#373535] text-sm">
@@ -147,43 +147,43 @@ const LandingPage = () => {
           </div>
         </div>
       </div>
-      <div className="w-full flex flex-col justify-around items-center gap-15 pt-10 bg-[#FFECE3] border-b border-b-[#4242425C]/36">
+      <div className="w-full flex flex-col justify-around items-center gap-10 px-4 pt-8 md:gap-15 md:px-0 md:pt-10 bg-[#FFECE3] border-b border-b-[#4242425C]/36">
         <h2 className="font-ponnala text-[#373535] border-b border-b-[#4242425C]/36">
           Your Journey With Searchera
         </h2>
-        <div className="w-full flex justify-evenly items-center">
-          <div className="w-1/4 flex flex-col justify-evenly items-center gap-3 text-center p-3 hover:rounded-2xl hover:bg-[#D9D9D9]/25">
+        <div className="w-full flex flex-col items-stretch gap-6 md:flex-row md:justify-evenly md:items-center md:gap-0">
+          <div className="w-full md:w-1/4 flex flex-col justify-evenly items-center gap-3 text-center p-4 md:p-3 hover:rounded-2xl hover:bg-[#D9D9D9]/25">
             <img src={JourneyStepOneIcon} alt="Step one" className="w-20 h-20" />
             <h3 className="font-poppins-semibold text-primary text-md">
               Browse Jobs
             </h3>
-            <p className="w-65 font-poppins text-[#373535] text-sm">
+            <p className="w-full max-w-80 md:w-65 font-poppins text-[#373535] text-sm">
               Explore a wide range of jobs with smart filters that match your
               skills and preferences.
             </p>
           </div>
-          <div className="w-1/4 flex flex-col justify-evenly items-center gap-3 text-center p-3 hover:rounded-2xl hover:bg-[#D9D9D9]/25">
+          <div className="w-full md:w-1/4 flex flex-col justify-evenly items-center gap-3 text-center p-4 md:p-3 hover:rounded-2xl hover:bg-[#D9D9D9]/25">
             <img src={JourneyStepTwoIcon} alt="Step two" className="w-20 h-20" />
             <h3 className="font-poppins-semibold text-primary text-md">
               Apply Smartly
             </h3>
-            <p className="w-65 font-poppins text-[#373535] text-sm">
+            <p className="w-full max-w-80 md:w-65 font-poppins text-[#373535] text-sm">
               Submit your application and take an AI-powered interview from
               wherever you are.
             </p>
           </div>
-          <div className="w-1/4 flex flex-col justify-evenly items-center gap-3 text-center p-3 hover:rounded-2xl hover:bg-[#D9D9D9]/25">
+          <div className="w-full md:w-1/4 flex flex-col justify-evenly items-center gap-3 text-center p-4 md:p-3 hover:rounded-2xl hover:bg-[#D9D9D9]/25">
             <img src={JourneyStepThreeIcon} alt="Step three" className="w-20 h-20" />
             <h3 className="font-poppins-semibold text-primary text-md">
               Get Faster Matches
             </h3>
-            <p className="w-65 font-poppins text-[#373535] text-sm">
+            <p className="w-full max-w-80 md:w-65 font-poppins text-[#373535] text-sm">
               Receive instant AI feedback and get matched with employers who
               value your profile.
             </p>
           </div>
         </div>
-        <p className="mb-10 font-poppins text-primary text-lg">
+        <p className="mb-10 font-poppins text-primary text-sm text-center md:text-lg">
           “Employers review your results and interview summary to make faster
           hiring decisions.”
         </p>

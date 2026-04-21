@@ -64,9 +64,12 @@ const LoginPage = () => {
       {/* LEFT SECTION */}
       <div className="login-left relative flex flex-col justify-center items-center px-8 md:px-28 bg-white py-12 overflow-y-auto">
         {/* Logo */}
-        <h1 className="logo absolute top-8 left-8 md:left-28 text-primary-accent tracking-widest font-medium text-xl font-alatsi">
+        <Link
+          to="/"
+          className="logo absolute top-8 left-8 md:left-28 font-alatsi text-primary text-[17px] hover:text-[#FF996C] transition-colors tracking-widest font-medium text-xl"
+        >
           SEARCHERA
-        </h1>
+        </Link>
 
         {/* CONTENT WRAPPER */}
         <div className="auth-content max-w-lg w-full">
@@ -155,7 +158,7 @@ const LoginPage = () => {
           </div>
 
           {/* Social buttons */}
-          <div className="social-buttons flex gap-6">
+          <div className="social-buttons flex flex-col gap-3 sm:flex-row sm:gap-6">
             <button
               type="button"
               onClick={() => handleExternalLogin("Google")}

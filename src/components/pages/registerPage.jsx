@@ -216,9 +216,12 @@ const RegisterPage = () => {
     <div className="register-page grid grid-cols-1 md:grid-cols-2">
       {/* ── LEFT ── */}
       <div className="register-left relative flex flex-col justify-start items-center px-8 md:px-28 bg-white pt-10 pb-8 min-h-screen overflow-y-auto">
-        <h1 className="logo absolute top-8 left-8 md:left-28 text-primary-accent tracking-widest font-medium text-xl font-alatsi">
+        <Link
+          to="/"
+          className="logo absolute top-8 left-8 md:left-28 font-alatsi text-primary text-[17px] hover:text-[#FF996C] transition-colors tracking-widest font-medium text-xl"
+        >
           SEARCHERA
-        </h1>
+        </Link>
 
         <div className="auth-content max-w-lg w-full mt-14">
           <h2 className="text-3xl font-semibold text-primary font-poppins">Get Started Now</h2>
@@ -357,7 +360,7 @@ const RegisterPage = () => {
           </div>
 
           {/* Social */}
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <button type="button" onClick={() => handleExternalLogin("Google")}
               className="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm hover:bg-gray-50 transition flex items-center justify-center gap-2 font-poppins">
               <img src={GoogleIcon} alt="Google" className="w-4 h-4" />
@@ -378,7 +381,7 @@ const RegisterPage = () => {
       </div>
 
       {/* ── RIGHT ── */}
-      <div className="right-section relative h-full bg-gray-100 hidden md:block overflow-hidden sticky top-0 max-h-screen">
+      <div className="right-section h-full bg-gray-100 hidden md:block overflow-hidden sticky top-0 max-h-screen">
         <img src={AuthHero}
           alt="Decorative" className="absolute inset-0 w-full h-full object-cover object-[center_95%]" />
         <div className="absolute inset-0 bg-white/10" />

@@ -149,7 +149,7 @@ const Jobs = () => {
         )}
 
         <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[340px_minmax(0,1fr)]">
-          <aside className="max-h-[calc(100vh-220px)] overflow-y-auto pr-1">
+          <aside className="max-h-none overflow-y-visible pr-0 lg:max-h-[calc(100vh-220px)] lg:overflow-y-auto lg:pr-1">
             {isLoadingJobs ? (
               <div className="rounded-xl border border-[#E5E5E5] bg-white p-4 text-sm text-[#6F6F6F]">
                 Loading jobs...

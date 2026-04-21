@@ -604,7 +604,7 @@ const ForEmployersPage = () => {
 
   return (
     <main className="w-full border-b border-[#4242425C]/20">
-      <section className="w-full border-b border-[#4242425C]/20 bg-[#FFECE3] px-6 py-12">
+      <section className="w-full border-b border-[#4242425C]/20 bg-[#FFECE3] px-4 py-10 sm:px-6 sm:py-12">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
           <div className="inline-flex w-fit items-center gap-2 rounded-full border border-[#D3571F]/20 bg-white/70 px-3 py-1">
             <BriefcaseBusiness className="h-4 w-4 text-[#D3571F]" />
@@ -631,9 +631,9 @@ const ForEmployersPage = () => {
         </div>
       </section>
 
-      <section className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-6 px-6 py-8 lg:grid-cols-[minmax(0,1fr)_280px]">
+      <section className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_280px]">
         <div className="rounded-2xl border border-[#4242425C]/20 bg-white p-2 shadow-sm">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {[
               { id: "job", label: "Post Job", icon: BriefcaseBusiness },
               { id: "company", label: "Create Company", icon: Building2 },
@@ -990,7 +990,7 @@ const ForEmployersPage = () => {
         {activeSection === "skills" && (
           <div className="rounded-2xl border border-[#4242425C]/20 bg-white p-5 shadow-sm md:p-7">
             <div className="flex flex-wrap items-end gap-3">
-              <label className="min-w-[220px] flex-1">
+              <label className="w-full min-w-0 sm:min-w-[220px] sm:flex-1">
                 <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Add skill</span>
                 <input
                   type="text"
@@ -1004,7 +1004,7 @@ const ForEmployersPage = () => {
                 type="button"
                 onClick={handleAddSkill}
                 disabled={isSubmittingSkill || !newSkillName.trim() || !isEmployer}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#D3571F] px-5 py-2.5 text-sm font-poppins-medium text-white transition-colors hover:bg-[#B8461A] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#D3571F] px-5 py-2.5 text-sm font-poppins-medium text-white transition-colors hover:bg-[#B8461A] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
               >
                 <Plus className="h-4 w-4" />
                 Add Skill
