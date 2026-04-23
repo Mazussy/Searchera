@@ -19,6 +19,22 @@ export const updateProfile = async (formData) => {
   return data;
 };
 
+export const uploadCV = async (file) => {
+  const formData = new FormData();
+  formData.append("CVFile", file);
+
+  const { data } = await apiClient.post("/api/Profile/UploadCV", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+  return data;
+};
+
+export const getCVData = async () => {
+  const { data } = await apiClient.get("/api/Profile/GetCVData");
+  return data;
+};
+
 export const deleteProfile = async () => {
   const { data } = await apiClient.delete("/api/Profile/DeleteProfile");
   return data;

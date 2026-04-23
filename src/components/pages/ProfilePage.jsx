@@ -4,6 +4,8 @@ import {
   getProfile,
   completeProfile,
   updateProfile,
+  uploadCV,
+  getCVData,
   deleteProfile,
 } from "../../utilities/api/profileApi";
 import {
@@ -18,7 +20,163 @@ import {
   CheckCircle2,
   XCircle,
   Loader2,
+  FileText,
+  Upload,
+  Download,
 } from "lucide-react";
+
+const pickFirst = (obj, keys, fallback = null) => {
+  if (!obj || typeof obj !== "object") {
+    return fallback;
+  }
+
+  for (const key of keys) {
+    if (obj[key] !== undefined && obj[key] !== null) {
+      return obj[key];
+    }
+  }
+
+  return fallback;
+};
+
+const normalizeCVData = (rawCVData) => {
+  if (!rawCVData) {
+    return null;
+  }
+
+  if (typeof rawCVData === "string") {
+    const inferredFileName = rawCVData.split("/").pop() || "Uploaded CV";
+    return {
+      fileName: inferredFileName,
+      downloadUrl: rawCVData,
+      updatedAt: null,
+    };
+  }
+
+  const hasCV = pickFirst(rawCVData, ["hasCV", "HasCV"], true);
+  const downloadUrl = pickFirst(rawCVData, [
+    "downloadUrl",
+    "DownloadUrl",
+    "fileUrl",
+    "FileUrl",
+    "cvUrl",
+    "CVUrl",
+    "url",
+    "Url",
+    "path",
+    "Path",
+  ], "");
+
+  const deriveFileNameFromUrl = (url) => {
+    if (!url) {
+      return "";
+    }
+
+    try {
+      const normalizedUrl = String(url);
+      const withoutQuery = normalizedUrl.split("?")[0];
+      const decoded = decodeURIComponent(withoutQuery);
+      const bySlash = decoded.split("/").pop() || "";
+      const byBackslash = bySlash.split("\\").pop() || "";
+
+      return byBackslash.trim();
+    } catch {
+      return "";
+    }
+  };
+
+  const fileName = pickFirst(rawCVData, [
+    "fileName",
+    "FileName",
+    "cvFileName",
+    "CVFileName",
+    "name",
+    "Name",
+  ], "");
+  const updatedAt = pickFirst(rawCVData, [
+    "uploadedAt",
+    "UploadedAt",
+    "updatedAt",
+    "UpdatedAt",
+    "createdAt",
+    "CreatedAt",
+  ], null);
+
+  if (!hasCV && !downloadUrl) {
+    return null;
+  }
+
+  const resolvedFileName = fileName || deriveFileNameFromUrl(downloadUrl) || "Uploaded CV";
+
+  return {
+    fileName: resolvedFileName,
+    downloadUrl,
+    updatedAt,
+  };
+};
+
+const parseJwtPayload = (token) => {
+  try {
+    const payloadPart = String(token || "").split(".")[1];
+
+    if (!payloadPart) {
+      return null;
+    }
+
+    const normalized = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+    const decoded = atob(padded);
+
+    return JSON.parse(decoded);
+  } catch {
+    return null;
+  }
+};
+
+const normalizeAccountType = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z]/g, "");
+
+const isEmployeeType = (value) => {
+  const normalized = normalizeAccountType(value);
+
+  return (
+    normalized.includes("jobseeker") ||
+    normalized.includes("employee") ||
+    normalized.includes("seeker") ||
+    normalized.includes("candidate")
+  );
+};
+
+const resolveAccountType = (profileData) => {
+  const token =
+    localStorage.getItem("token") ||
+    localStorage.getItem("accessToken") ||
+    localStorage.getItem("authToken") ||
+    localStorage.getItem("jwt") ||
+    "";
+
+  const tokenPayload = parseJwtPayload(token);
+
+  return pickFirst(profileData, [
+    "userType",
+    "UserType",
+    "role",
+    "Role",
+    "accountType",
+    "AccountType",
+    "userRole",
+    "UserRole",
+  ],
+  pickFirst(tokenPayload, [
+    "userType",
+    "role",
+    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role",
+  ], localStorage.getItem("userType") || localStorage.getItem("role") || ""));
+};
 
 // ── Toast ─────────────────────────────────────────────────────────────────
 const Toast = ({ toast }) => {
@@ -111,6 +269,10 @@ const ProfilePage = () => {
   const [showDelete, setShowDelete] = useState(false);
   const [toast, setToast]           = useState(null);
   const fileRef                     = useRef(null);
+  const cvFileRef                   = useRef(null);
+  const [cvData, setCvData]         = useState(null);
+  const [cvLoading, setCvLoading]   = useState(false);
+  const [cvUploading, setCvUploading] = useState(false);
 
   const emptyForm = { Bio: "", LinkedInURL: "", GitHubURL: "", WebsiteURL: "", PhotoFile: null };
   const [form, setForm] = useState(emptyForm);
@@ -132,6 +294,9 @@ const ProfilePage = () => {
       try {
         const data = await getProfile();
         if (!active) return;
+
+        const shouldHandleCV = isEmployeeType(resolveAccountType(data));
+
         if (data) {
           setProfile(data);
           setHasProfile(true);
@@ -146,9 +311,28 @@ const ProfilePage = () => {
         } else {
           setHasProfile(false);
         }
+
+        if (shouldHandleCV) {
+          try {
+            setCvLoading(true);
+            const cvResponse = await getCVData();
+            if (!active) return;
+            setCvData(normalizeCVData(cvResponse));
+          } catch {
+            if (!active) return;
+            setCvData(null);
+          } finally {
+            if (active) {
+              setCvLoading(false);
+            }
+          }
+        } else {
+          setCvData(null);
+        }
       } catch {
         if (!active) return;
         setHasProfile(false);
+        setCvData(null);
       } finally {
         if (active) setLoading(false);
       }
@@ -208,6 +392,56 @@ const ProfilePage = () => {
     }
   };
 
+  const handleCVUpload = async (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      showToast("CV file is too large (max 10MB)", "error");
+      event.target.value = "";
+      return;
+    }
+
+    try {
+      setCvUploading(true);
+      await uploadCV(file);
+
+      let latestCvData = null;
+
+      try {
+        const cvResponse = await getCVData();
+        latestCvData = normalizeCVData(cvResponse);
+      } catch {
+        latestCvData = null;
+      }
+
+      setCvData(
+        latestCvData
+          ? {
+              ...latestCvData,
+              fileName:
+                latestCvData.fileName && latestCvData.fileName !== "Uploaded CV"
+                  ? latestCvData.fileName
+                  : file.name,
+            }
+          : {
+          fileName: file.name,
+          downloadUrl: "",
+          updatedAt: new Date().toISOString(),
+          },
+      );
+      showToast("CV uploaded ✓");
+    } catch {
+      showToast("Failed to upload CV", "error");
+    } finally {
+      setCvUploading(false);
+      event.target.value = "";
+    }
+  };
+
   // ── not logged in ──────────────────────────────────────────────────
   if (!isLoggedIn) {
     return (
@@ -250,6 +484,8 @@ const ProfilePage = () => {
   const displayName       = profile?.firstName
     ? `${profile.firstName} ${profile.lastName ?? ""}`.trim()
     : profile?.userName ?? profile?.email ?? "Your Profile";
+
+  const isEmployeeAccount = isEmployeeType(resolveAccountType(profile));
 
   const isEditMode = editing || !hasProfile;
 
@@ -347,6 +583,60 @@ const ProfilePage = () => {
                 </button>
               </div>
             )}
+
+            {isEmployeeAccount && (
+              <div className="bg-white border border-[#4242425C]/20 rounded-2xl p-5">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-[#D3571F]" />
+                    <h2 className="text-xs font-poppins-semibold text-gray-400 uppercase tracking-wider">Resume / CV</h2>
+                  </div>
+                  <button
+                    onClick={() => cvFileRef.current?.click()}
+                    disabled={cvUploading}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-1.5 text-xs font-poppins-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    {cvUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                    {cvData ? "Replace CV" : "Upload CV"}
+                  </button>
+                  <input
+                    ref={cvFileRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    className="hidden"
+                    onChange={handleCVUpload}
+                  />
+                </div>
+
+                {cvLoading ? (
+                  <p className="text-sm font-poppins text-gray-400">Loading CV data...</p>
+                ) : cvData ? (
+                  <div className="rounded-xl border border-gray-100 bg-[#FCFCFC] p-3">
+                    <p className="text-sm font-poppins-medium text-[#1A1A1A]">{cvData.fileName || "Uploaded CV"}</p>
+                    {cvData.updatedAt && (
+                      <p className="mt-1 text-xs font-poppins text-gray-500">
+                        Updated {new Date(cvData.updatedAt).toLocaleString()}
+                      </p>
+                    )}
+                    {cvData.downloadUrl && (
+                      <a
+                        href={cvData.downloadUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-2 inline-flex items-center gap-1.5 text-xs font-poppins-medium text-[#D3571F] hover:underline"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        Open CV
+                      </a>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm font-poppins text-gray-500">
+                    No CV uploaded yet. Add your latest resume to improve your profile.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -390,6 +680,57 @@ const ProfilePage = () => {
                   <Field label="GitHub URL"   name="GitHubURL"   type="url" value={form.GitHubURL}   onChange={handleChange} placeholder="https://github.com/yourname"   icon={Github} />
                   <Field label="Website URL"  name="WebsiteURL"  type="url" value={form.WebsiteURL}  onChange={handleChange} placeholder="https://yourwebsite.com" icon={Globe} />
                 </div>
+
+                {isEmployeeAccount && (
+                  <div className="rounded-xl border border-gray-100 bg-[#FCFCFC] p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="text-xs font-poppins-semibold uppercase tracking-wider text-gray-400">Resume / CV</h3>
+                      <button
+                        onClick={() => cvFileRef.current?.click()}
+                        disabled={cvUploading}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-1.5 text-xs font-poppins-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        {cvUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                        {cvData ? "Replace CV" : "Upload CV"}
+                      </button>
+                      <input
+                        ref={cvFileRef}
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        className="hidden"
+                        onChange={handleCVUpload}
+                      />
+                    </div>
+
+                    {cvLoading ? (
+                      <p className="text-sm font-poppins text-gray-400">Loading CV data...</p>
+                    ) : cvData ? (
+                      <div className="rounded-xl border border-gray-100 bg-white p-3">
+                        <p className="text-sm font-poppins-medium text-[#1A1A1A]">{cvData.fileName || "Uploaded CV"}</p>
+                        {cvData.updatedAt && (
+                          <p className="mt-1 text-xs font-poppins text-gray-500">
+                            Updated {new Date(cvData.updatedAt).toLocaleString()}
+                          </p>
+                        )}
+                        {cvData.downloadUrl && (
+                          <a
+                            href={cvData.downloadUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-2 inline-flex items-center gap-1.5 text-xs font-poppins-medium text-[#D3571F] hover:underline"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            Open CV
+                          </a>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-sm font-poppins text-gray-500">
+                        Upload your latest resume to help employers review your profile.
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 

@@ -6,6 +6,44 @@ import GoogleIcon from "../../assets/images/Google__G__logo.svg.png";
 import LinkedInIcon from "../../assets/images/LinkedIn_icon.svg.png";
 import AuthHero from "../../assets/images/72be0103c7bc9699eb45bcda9cc0d1c0fd2b75fa.jpg";
 
+const parseJwtPayload = (token) => {
+  try {
+    const payloadPart = String(token || "").split(".")[1];
+
+    if (!payloadPart) {
+      return null;
+    }
+
+    const normalized = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+    const decoded = atob(padded);
+
+    return JSON.parse(decoded);
+  } catch {
+    return null;
+  }
+};
+
+const persistUserRole = (responseData) => {
+  const token = responseData?.token;
+  const payload = parseJwtPayload(token);
+
+  const userType =
+    responseData?.userType ||
+    responseData?.UserType ||
+    responseData?.role ||
+    responseData?.Role ||
+    payload?.userType ||
+    payload?.role ||
+    payload?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
+    payload?.["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role"];
+
+  if (userType) {
+    localStorage.setItem("userType", String(userType));
+    localStorage.setItem("role", String(userType));
+  }
+};
+
 const LoginPage = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -37,6 +75,7 @@ const LoginPage = () => {
       // Save token to localStorage
       if (data.token) {
         localStorage.setItem("token", data.token);
+        persistUserRole(data);
       }
       
       // Redirect to jobs page
