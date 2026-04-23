@@ -186,7 +186,7 @@ const ProfilePage = () => {
       setProfile(result ?? { ...form, photoUrl: preview });
       setHasProfile(true);
       setEditing(false);
-      showToast(hasProfile ? "Profile updated ✓" : "Profile created ✓");
+      showToast(hasProfile ? "Profile updated ✓" : "Profile completed ✓");
     } catch {
       showToast("Failed to save profile", "error");
     } finally {
@@ -306,27 +306,6 @@ const ProfilePage = () => {
             </div>
           )}
 
-          {/* Save / Cancel (edit mode) */}
-          {isEditMode && (
-            <div className="flex items-center gap-2">
-              {hasProfile && (
-                <button
-                  onClick={() => { setEditing(false); setPreview(profile?.photoUrl ?? null); }}
-                  className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-poppins-medium text-gray-600 bg-white hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-              )}
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="flex items-center gap-2 px-5 py-2 rounded-xl bg-[#D3571F] text-white text-sm font-poppins-medium hover:bg-[#B8461A] disabled:opacity-50 transition-colors"
-              >
-                {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                {saving ? "Saving…" : hasProfile ? "Save Changes" : "Create Profile"}
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Name */}
@@ -373,7 +352,7 @@ const ProfilePage = () => {
 
         {/* ── EDIT / CREATE MODE ─────────────────────────────────────── */}
         {isEditMode && (
-          <div className="space-y-5 mt-4">
+          <div className="mt-4 space-y-4">
             {!hasProfile && (
               <div className="flex items-start gap-3 bg-[#FFECE3] border border-[#E46E39]/30 rounded-xl px-4 py-3">
                 <User className="w-4 h-4 text-[#D3571F] mt-0.5 flex-shrink-0" />
@@ -383,29 +362,59 @@ const ProfilePage = () => {
               </div>
             )}
 
-            {/* Bio */}
-            <div className="bg-white border border-[#4242425C]/20 rounded-2xl p-5">
-              <h2 className="text-xs font-poppins-semibold text-gray-400 uppercase tracking-wider mb-3">About You</h2>
-              <div>
-                <label className="block text-xs font-poppins-medium text-gray-500 mb-1.5">Bio</label>
-                <textarea
-                  name="Bio"
-                  value={form.Bio}
-                  onChange={handleChange}
-                  rows={4}
-                  placeholder="Write a short bio about yourself…"
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#D3571F]/30 focus:border-[#D3571F]/50 resize-none"
-                />
-                <p className="text-right text-[11px] font-poppins text-gray-300 mt-1">{form.Bio.length}/500</p>
+            <div className="rounded-2xl border border-[#4242425C]/20 bg-white p-5 shadow-sm">
+              <div className="mb-4 border-b border-gray-100 pb-3">
+                <h2 className="text-base font-poppins-semibold text-[#1A1A1A]">Profile Information</h2>
+                <p className="mt-1 text-xs font-poppins text-gray-500">
+                  Keep your details clear and current so your profile looks professional.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-poppins-medium text-gray-500 mb-1.5">Bio</label>
+                  <textarea
+                    name="Bio"
+                    value={form.Bio}
+                    onChange={handleChange}
+                    rows={5}
+                    placeholder="Write a short bio about yourself…"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#D3571F]/30 focus:border-[#D3571F]/50 resize-none"
+                  />
+                  <p className="mt-1 text-right text-[11px] font-poppins text-gray-300">{form.Bio.length}/500</p>
+                </div>
+
+                <div className="rounded-xl border border-gray-100 bg-[#FCFCFC] p-4 space-y-4">
+                  <h3 className="text-xs font-poppins-semibold uppercase tracking-wider text-gray-400">Public Links</h3>
+                  <Field label="LinkedIn URL" name="LinkedInURL" type="url" value={form.LinkedInURL} onChange={handleChange} placeholder="https://linkedin.com/in/yourname" icon={Linkedin} />
+                  <Field label="GitHub URL"   name="GitHubURL"   type="url" value={form.GitHubURL}   onChange={handleChange} placeholder="https://github.com/yourname"   icon={Github} />
+                  <Field label="Website URL"  name="WebsiteURL"  type="url" value={form.WebsiteURL}  onChange={handleChange} placeholder="https://yourwebsite.com" icon={Globe} />
+                </div>
               </div>
             </div>
 
-            {/* Links */}
-            <div className="bg-white border border-[#4242425C]/20 rounded-2xl p-5 space-y-4">
-              <h2 className="text-xs font-poppins-semibold text-gray-400 uppercase tracking-wider">Links</h2>
-              <Field label="LinkedIn URL" name="LinkedInURL" type="url" value={form.LinkedInURL} onChange={handleChange} placeholder="https://linkedin.com/in/yourname" icon={Linkedin} />
-              <Field label="GitHub URL"   name="GitHubURL"   type="url" value={form.GitHubURL}   onChange={handleChange} placeholder="https://github.com/yourname"   icon={Github} />
-              <Field label="Website URL"  name="WebsiteURL"  type="url" value={form.WebsiteURL}  onChange={handleChange} placeholder="https://yourwebsite.com"        icon={Globe} />
+            <div className="sticky bottom-4 z-20 rounded-2xl border border-gray-200 bg-white/95 p-3 shadow-lg backdrop-blur">
+              <div className="flex items-center justify-end gap-2">
+                {hasProfile && (
+                  <button
+                    onClick={() => {
+                      setEditing(false);
+                      setPreview(profile?.photoUrl ?? profile?.PhotoUrl ?? null);
+                    }}
+                    className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-poppins-medium text-gray-600 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                )}
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="flex items-center gap-2 px-5 py-2 rounded-xl bg-[#D3571F] text-white text-sm font-poppins-medium hover:bg-[#B8461A] disabled:opacity-50 transition-colors"
+                >
+                  {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  {saving ? "Saving…" : hasProfile ? "Save Changes" : "Complete Profile"}
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -9,7 +9,7 @@ import {
   Plus,
 } from "lucide-react";
 import { createJob, getAllCategories, searchJobSkills } from "../../utilities/api/jobsApi";
-import { createCompany } from "../../utilities/api/companiesApi";
+import { createCompany, getAllCompanies } from "../../utilities/api/companiesApi";
 import { getProfile } from "../../utilities/api/profileApi";
 import { addSkill, getAllSkills } from "../../utilities/api/skillsApi";
 
@@ -166,6 +166,15 @@ const fieldClass = (hasError) =>
       : "border-gray-200 focus:border-[#D3571F]/40 focus:ring-[#D3571F]/25"
   }`;
 
+const normalizeCompanyRecord = (company = {}) => {
+  const employerId = pickFirst(company, ["employerId", "EmployerId", "ownerId", "OwnerId"], "");
+
+  return {
+    ...company,
+    employerId: employerId ? String(employerId) : "",
+  };
+};
+
 const ForEmployersPage = () => {
   const [activeSection, setActiveSection] = useState("job");
   const [jobFormData, setJobFormData] = useState(defaultFormState);
@@ -174,9 +183,11 @@ const ForEmployersPage = () => {
   const [companyFormErrors, setCompanyFormErrors] = useState({});
   const [categories, setCategories] = useState([]);
   const [skills, setSkills] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [employerId, setEmployerId] = useState("");
   const [userRole, setUserRole] = useState("");
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [isLoadingCompanies, setIsLoadingCompanies] = useState(true);
   const [isResolvingProfile, setIsResolvingProfile] = useState(true);
   const [isSubmittingJob, setIsSubmittingJob] = useState(false);
   const [isSubmittingCompany, setIsSubmittingCompany] = useState(false);
@@ -199,6 +210,30 @@ const ForEmployersPage = () => {
     normalizedResolvedRole === "employer" ||
     normalizedStoredRole === "employer" ||
     (!normalizedResolvedRole && !normalizedStoredRole && hasEmployerId);
+
+  const loadCompanies = async (isActive = true) => {
+    setIsLoadingCompanies(true);
+
+    try {
+      const result = await getAllCompanies();
+
+      if (!isActive) {
+        return;
+      }
+
+      setCompanies(Array.isArray(result) ? result.map(normalizeCompanyRecord) : []);
+    } catch {
+      if (!isActive) {
+        return;
+      }
+
+      setCompanies([]);
+    } finally {
+      if (isActive) {
+        setIsLoadingCompanies(false);
+      }
+    }
+  };
 
   useEffect(() => {
     let isActive = true;
@@ -284,6 +319,7 @@ const ForEmployersPage = () => {
 
     loadCategories();
     loadSkills();
+    loadCompanies(isActive);
     loadProfile();
 
     return () => {
@@ -319,6 +355,21 @@ const ForEmployersPage = () => {
       })
       .filter(Boolean);
   }, [jobFormData.skillIds, skills, jobSkillResults]);
+
+  const currentCompany = useMemo(() => {
+    if (!employerId) {
+      return null;
+    }
+
+    const normalizedEmployerId = String(employerId).trim();
+
+    return companies.find((company) => {
+      const companyEmployerId = pickFirst(company, ["employerId", "EmployerId", "ownerId", "OwnerId"], "");
+      return String(companyEmployerId || "").trim() === normalizedEmployerId;
+    }) || null;
+  }, [companies, employerId]);
+
+  const companyTabLabel = currentCompany ? "My Company" : "Create Company";
 
   useEffect(() => {
     let isActive = true;
@@ -549,6 +600,11 @@ const ForEmployersPage = () => {
   const handleCompanySubmit = async (event) => {
     event.preventDefault();
 
+    if (currentCompany) {
+      setCompanyApiError("You already have a company on file. Use the My Company section to review it.");
+      return;
+    }
+
     if (!isEmployer) {
       setCompanyApiError("Only Employer accounts can create companies.");
       return;
@@ -646,10 +702,10 @@ const ForEmployersPage = () => {
 
       <section className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_280px]">
         <div className="rounded-2xl border border-[#4242425C]/20 bg-white p-2 shadow-sm lg:col-span-2">
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {[
               { id: "job", label: "Post Job", icon: BriefcaseBusiness },
-              { id: "company", label: "Create Company", icon: Building2 },
+              { id: "company", label: companyTabLabel, icon: Building2 },
             ].map((item) => {
               const Icon = item.icon;
               return (
@@ -921,111 +977,209 @@ const ForEmployersPage = () => {
         )}
 
         {activeSection === "company" && (
-          <form
-            onSubmit={handleCompanySubmit}
-            className="rounded-2xl border border-[#4242425C]/20 bg-white p-5 shadow-sm md:p-7 lg:col-start-1"
-          >
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              <label className="md:col-span-2">
-                <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Company name</span>
-                <input
-                  type="text"
-                  value={companyFormData.companyName}
-                  onChange={(event) => handleCompanyFieldChange("companyName", event.target.value)}
-                  placeholder="Searchera Labs"
-                  className={fieldClass(Boolean(companyFormErrors.companyName))}
-                />
-                {companyFormErrors.companyName && (
-                  <p className="mt-1 text-xs font-poppins text-red-500">{companyFormErrors.companyName}</p>
-                )}
-              </label>
-
-              <label>
-                <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Industry</span>
-                <input
-                  type="text"
-                  value={companyFormData.industry}
-                  onChange={(event) => handleCompanyFieldChange("industry", event.target.value)}
-                  placeholder="Technology"
-                  className={fieldClass(false)}
-                />
-              </label>
-
-              <label>
-                <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Website</span>
-                <input
-                  type="url"
-                  value={companyFormData.website}
-                  onChange={(event) => handleCompanyFieldChange("website", event.target.value)}
-                  placeholder="https://example.com"
-                  className={fieldClass(Boolean(companyFormErrors.website))}
-                />
-                {companyFormErrors.website && (
-                  <p className="mt-1 text-xs font-poppins text-red-500">{companyFormErrors.website}</p>
-                )}
-              </label>
-
-              <label className="md:col-span-2">
-                <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Description</span>
-                <textarea
-                  rows={5}
-                  value={companyFormData.description}
-                  onChange={(event) => handleCompanyFieldChange("description", event.target.value)}
-                  placeholder="Tell candidates what your company does"
-                  className={fieldClass(false)}
-                />
-              </label>
-
-              <label className="md:col-span-2">
-                <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Company logo (optional)</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) => handleCompanyFieldChange("logoFile", event.target.files?.[0] ?? null)}
-                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-poppins text-[#292624] file:mr-3 file:rounded-lg file:border-0 file:bg-[#FFECE3] file:px-3 file:py-1 file:text-xs file:font-poppins-medium file:text-[#D3571F]"
-                />
-              </label>
-            </div>
-
-            {(companyApiError || companySuccessMessage) && (
-              <div className="mt-5">
-                {companyApiError && (
-                  <p className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-poppins text-red-700">
-                    <CircleAlert className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                    {companyApiError}
+          <>
+          {currentCompany ? (
+            <div className="rounded-2xl border border-[#4242425C]/20 bg-white p-5 shadow-sm md:p-7 lg:col-start-1">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[#D3571F]/20 bg-[#FFF6F2] px-3 py-1 text-xs font-poppins-medium text-primary-accent">
+                    <Building2 className="h-3.5 w-3.5" />
+                    My Company
+                  </div>
+                  <h2 className="mt-3 text-2xl font-poppins-bold text-[#1A1A1A]">
+                    {currentCompany.companyName ?? "Your Company"}
+                  </h2>
+                  <p className="mt-1 text-sm font-poppins text-[#4A4A4A]">
+                    Your company profile has already been created.
                   </p>
-                )}
-                {companySuccessMessage && (
-                  <p className="flex items-start gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-2.5 text-sm font-poppins text-green-700">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                    {companySuccessMessage}
-                  </p>
+                </div>
+                {currentCompany.logoUrl ? (
+                  <img
+                    src={currentCompany.logoUrl}
+                    alt={currentCompany.companyName ?? "Company logo"}
+                    className="h-14 w-14 rounded-2xl object-cover border border-gray-100"
+                  />
+                ) : (
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFECE3] text-lg font-poppins-bold text-primary-accent">
+                    {(currentCompany.companyName ?? "CO").slice(0, 2).toUpperCase()}
+                  </div>
                 )}
               </div>
-            )}
 
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <button
-                type="submit"
-                disabled={isSubmittingCompany || !isEmployer || !employerId}
-                className="rounded-xl bg-[#D3571F] px-5 py-2.5 text-sm font-poppins-medium text-white transition-colors hover:bg-[#B8461A] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isSubmittingCompany ? "Submitting company..." : "Create Company"}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setCompanyFormData(defaultCompanyForm);
-                  setCompanyFormErrors({});
-                  setCompanyApiError("");
-                  setCompanySuccessMessage("");
-                }}
-                className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-poppins-medium text-gray-600 transition-colors hover:bg-gray-50"
-              >
-                Reset
-              </button>
+              {isLoadingCompanies ? (
+                <p className="mt-5 text-sm font-poppins text-[#7A7A7A]">Loading company details...</p>
+              ) : (
+                <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="rounded-xl border border-[#4242425C]/20 bg-[#FAFAFA] p-4">
+                    <p className="text-xs font-poppins-medium text-[#7A7A7A]">Industry</p>
+                    <p className="mt-1 text-sm font-poppins-medium text-[#1A1A1A]">{currentCompany.industry ?? "—"}</p>
+                  </div>
+                  <div className="rounded-xl border border-[#4242425C]/20 bg-[#FAFAFA] p-4">
+                    <p className="text-xs font-poppins-medium text-[#7A7A7A]">Website</p>
+                    {currentCompany.website ? (
+                      <a
+                        href={currentCompany.website}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-1 block truncate text-sm font-poppins-medium text-primary-accent hover:underline"
+                      >
+                        {currentCompany.website}
+                      </a>
+                    ) : (
+                      <p className="mt-1 text-sm font-poppins-medium text-[#1A1A1A]">—</p>
+                    )}
+                  </div>
+                  <div className="md:col-span-2 rounded-xl border border-[#4242425C]/20 bg-[#FAFAFA] p-4">
+                    <p className="text-xs font-poppins-medium text-[#7A7A7A]">Description</p>
+                    <p className="mt-1 text-sm font-poppins text-[#1A1A1A]">
+                      {currentCompany.description || "No description provided yet."}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {(companyApiError || companySuccessMessage) && (
+                <div className="mt-5">
+                  {companyApiError && (
+                    <p className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-poppins text-red-700">
+                      <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+                      {companyApiError}
+                    </p>
+                  )}
+                  {companySuccessMessage && (
+                    <p className="flex items-start gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-2.5 text-sm font-poppins text-green-700">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                      {companySuccessMessage}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setActiveSection("job")}
+                  className="rounded-xl bg-[#D3571F] px-5 py-2.5 text-sm font-poppins-medium text-white transition-colors hover:bg-[#B8461A]"
+                >
+                  Back to Jobs
+                </button>
+                <button
+                  type="button"
+                  onClick={() => loadCompanies()}
+                  className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-poppins-medium text-gray-600 transition-colors hover:bg-gray-50"
+                >
+                  Refresh
+                </button>
+              </div>
             </div>
-          </form>
+          ) : (
+            <form
+              onSubmit={handleCompanySubmit}
+              className="rounded-2xl border border-[#4242425C]/20 bg-white p-5 shadow-sm md:p-7 lg:col-start-1"
+            >
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <label className="md:col-span-2">
+                  <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Company name</span>
+                  <input
+                    type="text"
+                    value={companyFormData.companyName}
+                    onChange={(event) => handleCompanyFieldChange("companyName", event.target.value)}
+                    placeholder="Searchera Labs"
+                    className={fieldClass(Boolean(companyFormErrors.companyName))}
+                  />
+                  {companyFormErrors.companyName && (
+                    <p className="mt-1 text-xs font-poppins text-red-500">{companyFormErrors.companyName}</p>
+                  )}
+                </label>
+
+                <label>
+                  <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Industry</span>
+                  <input
+                    type="text"
+                    value={companyFormData.industry}
+                    onChange={(event) => handleCompanyFieldChange("industry", event.target.value)}
+                    placeholder="Technology"
+                    className={fieldClass(false)}
+                  />
+                </label>
+
+                <label>
+                  <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Website</span>
+                  <input
+                    type="url"
+                    value={companyFormData.website}
+                    onChange={(event) => handleCompanyFieldChange("website", event.target.value)}
+                    placeholder="https://example.com"
+                    className={fieldClass(Boolean(companyFormErrors.website))}
+                  />
+                  {companyFormErrors.website && (
+                    <p className="mt-1 text-xs font-poppins text-red-500">{companyFormErrors.website}</p>
+                  )}
+                </label>
+
+                <label className="md:col-span-2">
+                  <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Description</span>
+                  <textarea
+                    rows={5}
+                    value={companyFormData.description}
+                    onChange={(event) => handleCompanyFieldChange("description", event.target.value)}
+                    placeholder="Tell candidates what your company does"
+                    className={fieldClass(false)}
+                  />
+                </label>
+
+                <label className="md:col-span-2">
+                  <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Company logo (optional)</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) => handleCompanyFieldChange("logoFile", event.target.files?.[0] ?? null)}
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-poppins text-[#292624] file:mr-3 file:rounded-lg file:border-0 file:bg-[#FFECE3] file:px-3 file:py-1 file:text-xs file:font-poppins-medium file:text-[#D3571F]"
+                  />
+                </label>
+              </div>
+
+              {(companyApiError || companySuccessMessage) && (
+                <div className="mt-5">
+                  {companyApiError && (
+                    <p className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-poppins text-red-700">
+                      <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+                      {companyApiError}
+                    </p>
+                  )}
+                  {companySuccessMessage && (
+                    <p className="flex items-start gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-2.5 text-sm font-poppins text-green-700">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                      {companySuccessMessage}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <button
+                  type="submit"
+                  disabled={isSubmittingCompany || !isEmployer || !employerId}
+                  className="rounded-xl bg-[#D3571F] px-5 py-2.5 text-sm font-poppins-medium text-white transition-colors hover:bg-[#B8461A] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isSubmittingCompany ? "Submitting company..." : "Create Company"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCompanyFormData(defaultCompanyForm);
+                    setCompanyFormErrors({});
+                    setCompanyApiError("");
+                    setCompanySuccessMessage("");
+                  }}
+                  className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-poppins-medium text-gray-600 transition-colors hover:bg-gray-50"
+                >
+                  Reset
+                </button>
+              </div>
+            </form>
+          )}
+          </>
         )}
 
         <aside className="space-y-4 lg:col-start-2 lg:row-start-2">
