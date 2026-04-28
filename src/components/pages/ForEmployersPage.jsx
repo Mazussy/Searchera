@@ -86,6 +86,42 @@ const pickFirst = (obj, keys, fallback = null) => {
   return fallback;
 };
 
+const parseJwtPayload = (token) => {
+  try {
+    const payloadPart = String(token || "").split(".")[1];
+
+    if (!payloadPart) {
+      return null;
+    }
+
+    const normalized = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+    const decoded = atob(padded);
+
+    return JSON.parse(decoded);
+  } catch {
+    return null;
+  }
+};
+
+const normalizeAccountType = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z]/g, "");
+
+const isEmployerType = (value) => normalizeAccountType(value).includes("employer");
+const isEmployeeType = (value) => {
+  const normalized = normalizeAccountType(value);
+
+  return (
+    normalized.includes("employee") ||
+    normalized.includes("jobseeker") ||
+    normalized.includes("candidate") ||
+    normalized.includes("seeker")
+  );
+};
+
 const resolveProfileObject = (response) => {
   if (!response || typeof response !== "object") {
     return null;
@@ -203,13 +239,34 @@ const ForEmployersPage = () => {
 
   const isLoggedIn = Boolean(localStorage.getItem("token"));
   const roleFromStorage = localStorage.getItem("userType") || localStorage.getItem("role") || "";
+  const tokenPayload = useMemo(() => {
+    const token =
+      localStorage.getItem("token") ||
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("authToken") ||
+      localStorage.getItem("jwt") ||
+      "";
+
+    return parseJwtPayload(token);
+  }, []);
   const normalizedResolvedRole = String(userRole || "").trim().toLowerCase();
   const normalizedStoredRole = String(roleFromStorage || "").trim().toLowerCase();
-  const hasEmployerId = Boolean(String(employerId || "").trim());
-  const isEmployer =
-    normalizedResolvedRole === "employer" ||
-    normalizedStoredRole === "employer" ||
-    (!normalizedResolvedRole && !normalizedStoredRole && hasEmployerId);
+  const tokenRole = normalizeAccountType(
+    pickFirst(
+      tokenPayload,
+      [
+        "userType",
+        "role",
+        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role",
+      ],
+      "",
+    ),
+  );
+  const accountTypeSignals = [normalizedResolvedRole, normalizedStoredRole, tokenRole].filter(Boolean);
+  const hasEmployerSignal = accountTypeSignals.some((value) => isEmployerType(value));
+  const hasEmployeeSignal = accountTypeSignals.some((value) => isEmployeeType(value));
+  const isEmployer = hasEmployerSignal && !hasEmployeeSignal;
 
   const loadCompanies = async (isActive = true) => {
     setIsLoadingCompanies(true);
@@ -654,7 +711,7 @@ const ForEmployersPage = () => {
       <main className="w-full border-b border-[#4242425C]/20">
         <section className="mx-auto flex min-h-[55vh] w-full max-w-3xl flex-col items-center justify-center gap-4 px-6 py-12 text-center">
           <div className="rounded-2xl bg-[#FFECE3] p-3">
-            <BriefcaseBusiness className="h-8 w-8 text-[#D3571F]" />
+            <BriefcaseBusiness className="h-8 w-8 text-primary-accent" />
           </div>
           <h1 className="font-poppins-bold text-2xl text-[#1A1A1A]">Employer Portal</h1>
           <p className="max-w-md text-sm font-poppins text-[#4A4A4A]">
@@ -662,10 +719,56 @@ const ForEmployersPage = () => {
           </p>
           <Link
             to="/login"
-            className="rounded-xl bg-[#D3571F] px-5 py-2.5 text-sm font-poppins-medium text-white hover:bg-[#B8461A]"
+            className="rounded-xl bg-primary-accent px-5 py-2.5 text-sm font-poppins-medium text-white hover:bg-secondary-accent"
           >
             Go to Login
           </Link>
+        </section>
+      </main>
+    );
+  }
+
+  if (isResolvingProfile) {
+    return (
+      <main className="w-full border-b border-[#4242425C]/20">
+        <section className="mx-auto flex min-h-[55vh] w-full max-w-3xl flex-col items-center justify-center gap-4 px-6 py-12 text-center">
+          <div className="rounded-2xl bg-[#FFECE3] p-3">
+            <BriefcaseBusiness className="h-8 w-8 text-primary-accent" />
+          </div>
+          <h1 className="font-poppins-bold text-2xl text-[#1A1A1A]">Employer Portal</h1>
+          <p className="max-w-md text-sm font-poppins text-[#4A4A4A]">
+            Checking your account type before opening employer tools.
+          </p>
+        </section>
+      </main>
+    );
+  }
+
+  if (!isEmployer) {
+    return (
+      <main className="w-full border-b border-[#4242425C]/20">
+        <section className="mx-auto flex min-h-[55vh] w-full max-w-3xl flex-col items-center justify-center gap-4 px-6 py-12 text-center">
+          <div className="rounded-2xl bg-[#FFECE3] p-3">
+            <BriefcaseBusiness className="h-8 w-8 text-primary-accent" />
+          </div>
+          <h1 className="font-poppins-bold text-2xl text-[#1A1A1A]">Employer access only</h1>
+          <p className="max-w-md text-sm font-poppins text-[#4A4A4A]">
+            Employee accounts can&apos;t use this area. If you need to post jobs or create a company, switch to an employer account first.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <Link
+              to="/jobs"
+              className="rounded-xl bg-primary-accent px-5 py-2.5 text-sm font-poppins-medium text-white hover:bg-secondary-accent"
+            >
+              Browse Jobs
+            </Link>
+            <Link
+              to="/profile"
+              className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-poppins-medium text-gray-600 hover:bg-gray-50"
+            >
+              View Profile
+            </Link>
+          </div>
         </section>
       </main>
     );
@@ -685,6 +788,11 @@ const ForEmployersPage = () => {
           <p className="max-w-2xl text-sm font-poppins text-[#4A4A4A] md:text-[15px]">
             Create your company, manage skill tags, and post jobs that go through admin approval.
           </p>
+          {!isEmployer && !isResolvingProfile && (
+            <p className="rounded-xl border border-[#F4D5C7] bg-white/80 px-4 py-2 text-sm font-poppins text-[#A85A35]">
+              This page is view-only for employee accounts. Posting jobs and creating companies are disabled unless your account is marked as an employer.
+            </p>
+          )}
           {isResolvingProfile ? (
             <p className="text-xs font-poppins text-[#7A7A7A]">Resolving employer profile...</p>
           ) : (
@@ -732,253 +840,253 @@ const ForEmployersPage = () => {
             onSubmit={handleJobSubmit}
             className="rounded-2xl border border-[#4242425C]/20 bg-white p-5 shadow-sm md:p-7 lg:col-start-1"
           >
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-            <label className="md:col-span-2">
-              <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Category</span>
-              <select
-                value={jobFormData.categoryId}
-                onChange={(event) => handleJobFieldChange("categoryId", event.target.value)}
-                disabled={isLoadingCategories}
-                className={fieldClass(Boolean(jobFormErrors.categoryId))}
-              >
-                <option value="">{isLoadingCategories ? "Loading categories..." : "Choose a category"}</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.categoryName}
-                  </option>
-                ))}
-              </select>
-              {jobFormErrors.categoryId && (
-                <p className="mt-1 text-xs font-poppins text-red-500">{jobFormErrors.categoryId}</p>
-              )}
-            </label>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+              <label className="md:col-span-2">
+                <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Category</span>
+                <select
+                  value={jobFormData.categoryId}
+                  onChange={(event) => handleJobFieldChange("categoryId", event.target.value)}
+                  disabled={isLoadingCategories}
+                  className={fieldClass(Boolean(jobFormErrors.categoryId))}
+                >
+                  <option value="">{isLoadingCategories ? "Loading categories..." : "Choose a category"}</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.categoryName}
+                    </option>
+                  ))}
+                </select>
+                {jobFormErrors.categoryId && (
+                  <p className="mt-1 text-xs font-poppins text-red-500">{jobFormErrors.categoryId}</p>
+                )}
+              </label>
 
-            <label className="md:col-span-2">
-              <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Job title</span>
-              <input
-                type="text"
-                value={jobFormData.title}
-                onChange={(event) => handleJobFieldChange("title", event.target.value)}
-                placeholder="Senior Frontend Engineer"
-                className={fieldClass(Boolean(jobFormErrors.title))}
-              />
-              {jobFormErrors.title && (
-                <p className="mt-1 text-xs font-poppins text-red-500">{jobFormErrors.title}</p>
-              )}
-            </label>
-
-            <div className="md:col-span-2">
-              <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Required skills (optional)</span>
-              <div className="flex items-center gap-2">
+              <label className="md:col-span-2">
+                <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Job title</span>
                 <input
                   type="text"
-                  value={jobSkillQuery}
-                  onChange={(event) => {
-                    setJobSkillQuery(event.target.value);
-
-                    if (skillsApiError) {
-                      setSkillsApiError("");
-                    }
-                  }}
-                  placeholder="Search skills like React, JavaScript, Figma"
-                  className={fieldClass(false)}
+                  value={jobFormData.title}
+                  onChange={(event) => handleJobFieldChange("title", event.target.value)}
+                  placeholder="Senior Frontend Engineer"
+                  className={fieldClass(Boolean(jobFormErrors.title))}
                 />
-                <button
-                  type="button"
-                  onClick={handleAddSkillFromJobQuery}
-                  disabled={isSubmittingSkill || !jobSkillQuery.trim() || !isEmployer}
-                  className="inline-flex h-[42px] w-[42px] flex-shrink-0 items-center justify-center rounded-xl border border-primary-accent/25 bg-[#FFF6F2] text-primary-accent transition-colors hover:bg-[#FFECE3] disabled:cursor-not-allowed disabled:opacity-50"
-                  aria-label="Add skill"
-                  title="Add skill from your search term"
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
+                {jobFormErrors.title && (
+                  <p className="mt-1 text-xs font-poppins text-red-500">{jobFormErrors.title}</p>
+                )}
+              </label>
+
+              <div className="md:col-span-2">
+                <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Required skills (optional)</span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={jobSkillQuery}
+                    onChange={(event) => {
+                      setJobSkillQuery(event.target.value);
+
+                      if (skillsApiError) {
+                        setSkillsApiError("");
+                      }
+                    }}
+                    placeholder="Search skills like React, JavaScript, Figma"
+                    className={fieldClass(false)}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddSkillFromJobQuery}
+                    disabled={isSubmittingSkill || !jobSkillQuery.trim() || !isEmployer}
+                    className="inline-flex h-[42px] w-[42px] flex-shrink-0 items-center justify-center rounded-xl border border-primary-accent/25 bg-[#FFF6F2] text-primary-accent transition-colors hover:bg-[#FFECE3] disabled:cursor-not-allowed disabled:opacity-50"
+                    aria-label="Add skill"
+                    title="Add skill from your search term"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <p className="mt-2 text-xs font-poppins text-[#7A7A7A]">
+                  Can't find a skill? Type it and click + to add it, then we will attach it to this job.
+                </p>
+
+                {skillsApiError && (
+                  <p className="mt-2 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-poppins text-red-700">
+                    <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+                    {skillsApiError}
+                  </p>
+                )}
+
+                {jobSkillQuery.trim() && (
+                  <div className="mt-2 max-h-44 overflow-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                    {isSearchingJobSkills ? (
+                      <p className="px-3 py-2 text-sm font-poppins text-[#7A7A7A]">Searching skills...</p>
+                    ) : jobSkillResults.length === 0 ? (
+                      <p className="px-3 py-2 text-sm font-poppins text-[#7A7A7A]">No matching skills found.</p>
+                    ) : (
+                      jobSkillResults.map((skill, index) => (
+                        <button
+                          key={skill.id ?? `${skill.skillName}-${index}`}
+                          type="button"
+                          onClick={() => handleSelectJobSkill(skill)}
+                          className="flex w-full items-center justify-between px-3 py-2 text-left text-sm font-poppins text-[#1A1A1A] transition-colors hover:bg-[#FFF6F2]"
+                        >
+                          <span>{skill.skillName}</span>
+                          <span className="text-xs font-poppins-medium text-primary-accent">Add</span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+
+                {selectedJobSkills.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {selectedJobSkills.map((skill) => (
+                      <span
+                        key={skill.id}
+                        className="inline-flex items-center gap-2 rounded-full border border-primary-accent/25 bg-[#FFF6F2] px-3 py-1 text-xs font-poppins-medium text-[#A04416]"
+                      >
+                        {skill.skillName}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveJobSkill(skill.id)}
+                          className="text-primary-accent transition-colors hover:text-[#B8461A]"
+                          aria-label={`Remove ${skill.skillName}`}
+                        >
+                          x
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              <p className="mt-2 text-xs font-poppins text-[#7A7A7A]">
-                Can't find a skill? Type it and click + to add it, then we will attach it to this job.
-              </p>
-
-              {skillsApiError && (
-                <p className="mt-2 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-poppins text-red-700">
-                  <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
-                  {skillsApiError}
-                </p>
-              )}
-
-              {jobSkillQuery.trim() && (
-                <div className="mt-2 max-h-44 overflow-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-                  {isSearchingJobSkills ? (
-                    <p className="px-3 py-2 text-sm font-poppins text-[#7A7A7A]">Searching skills...</p>
-                  ) : jobSkillResults.length === 0 ? (
-                    <p className="px-3 py-2 text-sm font-poppins text-[#7A7A7A]">No matching skills found.</p>
-                  ) : (
-                    jobSkillResults.map((skill, index) => (
-                      <button
-                        key={skill.id ?? `${skill.skillName}-${index}`}
-                        type="button"
-                        onClick={() => handleSelectJobSkill(skill)}
-                        className="flex w-full items-center justify-between px-3 py-2 text-left text-sm font-poppins text-[#1A1A1A] transition-colors hover:bg-[#FFF6F2]"
-                      >
-                        <span>{skill.skillName}</span>
-                        <span className="text-xs font-poppins-medium text-primary-accent">Add</span>
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-
-              {selectedJobSkills.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {selectedJobSkills.map((skill) => (
-                    <span
-                      key={skill.id}
-                      className="inline-flex items-center gap-2 rounded-full border border-primary-accent/25 bg-[#FFF6F2] px-3 py-1 text-xs font-poppins-medium text-[#A04416]"
-                    >
-                      {skill.skillName}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveJobSkill(skill.id)}
-                        className="text-primary-accent transition-colors hover:text-[#B8461A]"
-                        aria-label={`Remove ${skill.skillName}`}
-                      >
-                        x
-                      </button>
-                    </span>
+              <label>
+                <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Job type</span>
+                <select
+                  value={jobFormData.jobType}
+                  onChange={(event) => handleJobFieldChange("jobType", event.target.value)}
+                  className={fieldClass(false)}
+                >
+                  {jobTypeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
                   ))}
-                </div>
-              )}
+                </select>
+              </label>
+
+              <label>
+                <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Application deadline</span>
+                <input
+                  type="date"
+                  min={minDeadline}
+                  value={jobFormData.deadline}
+                  onChange={(event) => handleJobFieldChange("deadline", event.target.value)}
+                  className={fieldClass(Boolean(jobFormErrors.deadline))}
+                />
+                {jobFormErrors.deadline && (
+                  <p className="mt-1 text-xs font-poppins text-red-500">{jobFormErrors.deadline}</p>
+                )}
+              </label>
+
+              <label>
+                <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Location</span>
+                <input
+                  type="text"
+                  value={jobFormData.location}
+                  onChange={(event) => handleJobFieldChange("location", event.target.value)}
+                  placeholder="Cairo, Egypt"
+                  className={fieldClass(Boolean(jobFormErrors.location))}
+                />
+                {jobFormErrors.location && (
+                  <p className="mt-1 text-xs font-poppins text-red-500">{jobFormErrors.location}</p>
+                )}
+              </label>
+
+              <label>
+                <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Salary range</span>
+                <input
+                  type="text"
+                  value={jobFormData.salaryRange}
+                  onChange={(event) => handleJobFieldChange("salaryRange", event.target.value)}
+                  placeholder="$2,000 - $3,000"
+                  className={fieldClass(Boolean(jobFormErrors.salaryRange))}
+                />
+                {jobFormErrors.salaryRange && (
+                  <p className="mt-1 text-xs font-poppins text-red-500">{jobFormErrors.salaryRange}</p>
+                )}
+              </label>
+
+              <label className="md:col-span-2">
+                <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Short summary (optional)</span>
+                <textarea
+                  rows={3}
+                  value={jobFormData.summary}
+                  onChange={(event) => handleJobFieldChange("summary", event.target.value)}
+                  placeholder="A short summary shown in previews"
+                  className={fieldClass(false)}
+                />
+              </label>
+
+              <label className="md:col-span-2">
+                <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Description</span>
+                <textarea
+                  rows={6}
+                  value={jobFormData.description}
+                  onChange={(event) => handleJobFieldChange("description", event.target.value)}
+                  placeholder="Describe responsibilities, requirements, and benefits"
+                  className={fieldClass(Boolean(jobFormErrors.description))}
+                />
+                {jobFormErrors.description && (
+                  <p className="mt-1 text-xs font-poppins text-red-500">{jobFormErrors.description}</p>
+                )}
+              </label>
             </div>
 
-            <label>
-              <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Job type</span>
-              <select
-                value={jobFormData.jobType}
-                onChange={(event) => handleJobFieldChange("jobType", event.target.value)}
-                className={fieldClass(false)}
+            {(jobApiError || jobSuccessMessage) && (
+              <div className="mt-5">
+                {jobApiError && (
+                  <p className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-poppins text-red-700">
+                    <CircleAlert className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                    {jobApiError}
+                  </p>
+                )}
+                {jobSuccessMessage && (
+                  <p className="flex items-start gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-2.5 text-sm font-poppins text-green-700">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                    {jobSuccessMessage}
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <button
+                type="submit"
+                disabled={isSubmittingJob || isLoadingCategories || categories.length === 0 || !isEmployer}
+                className="rounded-xl bg-[#D3571F] px-5 py-2.5 text-sm font-poppins-medium text-white transition-colors hover:bg-[#B8461A] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {jobTypeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Application deadline</span>
-              <input
-                type="date"
-                min={minDeadline}
-                value={jobFormData.deadline}
-                onChange={(event) => handleJobFieldChange("deadline", event.target.value)}
-                className={fieldClass(Boolean(jobFormErrors.deadline))}
-              />
-              {jobFormErrors.deadline && (
-                <p className="mt-1 text-xs font-poppins text-red-500">{jobFormErrors.deadline}</p>
-              )}
-            </label>
-
-            <label>
-              <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Location</span>
-              <input
-                type="text"
-                value={jobFormData.location}
-                onChange={(event) => handleJobFieldChange("location", event.target.value)}
-                placeholder="Cairo, Egypt"
-                className={fieldClass(Boolean(jobFormErrors.location))}
-              />
-              {jobFormErrors.location && (
-                <p className="mt-1 text-xs font-poppins text-red-500">{jobFormErrors.location}</p>
-              )}
-            </label>
-
-            <label>
-              <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Salary range</span>
-              <input
-                type="text"
-                value={jobFormData.salaryRange}
-                onChange={(event) => handleJobFieldChange("salaryRange", event.target.value)}
-                placeholder="$2,000 - $3,000"
-                className={fieldClass(Boolean(jobFormErrors.salaryRange))}
-              />
-              {jobFormErrors.salaryRange && (
-                <p className="mt-1 text-xs font-poppins text-red-500">{jobFormErrors.salaryRange}</p>
-              )}
-            </label>
-
-            <label className="md:col-span-2">
-              <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Short summary (optional)</span>
-              <textarea
-                rows={3}
-                value={jobFormData.summary}
-                onChange={(event) => handleJobFieldChange("summary", event.target.value)}
-                placeholder="A short summary shown in previews"
-                className={fieldClass(false)}
-              />
-            </label>
-
-            <label className="md:col-span-2">
-              <span className="mb-1.5 block text-sm font-poppins-medium text-[#1A1A1A]">Description</span>
-              <textarea
-                rows={6}
-                value={jobFormData.description}
-                onChange={(event) => handleJobFieldChange("description", event.target.value)}
-                placeholder="Describe responsibilities, requirements, and benefits"
-                className={fieldClass(Boolean(jobFormErrors.description))}
-              />
-              {jobFormErrors.description && (
-                <p className="mt-1 text-xs font-poppins text-red-500">{jobFormErrors.description}</p>
-              )}
-            </label>
-          </div>
-
-          {(jobApiError || jobSuccessMessage) && (
-            <div className="mt-5">
-              {jobApiError && (
-                <p className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-poppins text-red-700">
-                  <CircleAlert className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                  {jobApiError}
-                </p>
-              )}
-              {jobSuccessMessage && (
-                <p className="flex items-start gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-2.5 text-sm font-poppins text-green-700">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                  {jobSuccessMessage}
-                </p>
-              )}
+                {isSubmittingJob ? "Posting job..." : "Post Job"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setJobFormData(defaultFormState);
+                  setJobSkillQuery("");
+                  setJobSkillResults([]);
+                  setJobFormErrors({});
+                  setJobApiError("");
+                  setJobSuccessMessage("");
+                }}
+                className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-poppins-medium text-gray-600 transition-colors hover:bg-gray-50"
+              >
+                Reset
+              </button>
             </div>
-          )}
-
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <button
-              type="submit"
-              disabled={isSubmittingJob || isLoadingCategories || categories.length === 0 || !isEmployer}
-              className="rounded-xl bg-[#D3571F] px-5 py-2.5 text-sm font-poppins-medium text-white transition-colors hover:bg-[#B8461A] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isSubmittingJob ? "Posting job..." : "Post Job"}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setJobFormData(defaultFormState);
-                setJobSkillQuery("");
-                setJobSkillResults([]);
-                setJobFormErrors({});
-                setJobApiError("");
-                setJobSuccessMessage("");
-              }}
-              className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-poppins-medium text-gray-600 transition-colors hover:bg-gray-50"
-            >
-              Reset
-            </button>
-          </div>
-        </form>
+          </form>
         )}
 
         {activeSection === "company" && (
           <>
-          {currentCompany ? (
+          {isEmployer && currentCompany ? (
             <div className="rounded-2xl border border-[#4242425C]/20 bg-white p-5 shadow-sm md:p-7 lg:col-start-1">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -1072,7 +1180,7 @@ const ForEmployersPage = () => {
                 </button>
               </div>
             </div>
-          ) : (
+          ) : isEmployer ? (
             <form
               onSubmit={handleCompanySubmit}
               className="rounded-2xl border border-[#4242425C]/20 bg-white p-5 shadow-sm md:p-7 lg:col-start-1"
@@ -1178,6 +1286,32 @@ const ForEmployersPage = () => {
                 </button>
               </div>
             </form>
+          ) : (
+            <div className="rounded-2xl border border-[#4242425C]/20 bg-white p-5 shadow-sm md:p-7 lg:col-start-1">
+              <div className="rounded-2xl border border-[#F4D5C7] bg-[#FFF6F2] p-5">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary-accent/20 bg-white px-3 py-1 text-xs font-poppins-medium text-primary-accent">
+                  <Building2 className="h-3.5 w-3.5" />
+                  Company management disabled
+                </div>
+                <p className="mt-3 text-sm font-poppins text-[#4A4A4A]">
+                  Employee accounts can view company information here, but only employer accounts can create or manage companies.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <Link
+                    to="/profile"
+                    className="rounded-xl bg-primary-accent px-5 py-2.5 text-sm font-poppins-medium text-white hover:bg-secondary-accent"
+                  >
+                    Check Profile
+                  </Link>
+                  <Link
+                    to="/jobs"
+                    className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-poppins-medium text-gray-600 hover:bg-gray-50"
+                  >
+                    Browse Jobs
+                  </Link>
+                </div>
+              </div>
+            </div>
           )}
           </>
         )}
