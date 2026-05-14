@@ -18,3 +18,20 @@ export const register = async (registrationData) => {
 
   return data;
 };
+
+export const forgotPassword = async (email) => {
+  const { data } = await apiClient.post(AUTH_ENDPOINTS.forgotPassword, {
+    email,
+  });
+
+  return data;
+};
+
+export const resetPassword = async (resetPasswordData) => {
+  const { data } = await apiClient.post(
+    AUTH_ENDPOINTS.resetPassword,
+    resetPasswordData,
+  );
+
+  return data;
+};

@@ -10,6 +10,8 @@ import LandingPage from "./components/pages/LandingPage.jsx";
 import AdminDashboard from "./components/pages/AdminDashboard.jsx";
 import ProfilePage from "./components/pages/ProfilePage.jsx";
 import ForEmployersPage from "./components/pages/ForEmployersPage.jsx";
+import ForgotPasswordPage from "./components/pages/ForgotPasswordPage.jsx";
+import ResetPasswordPage from "./components/pages/ResetPasswordPage.jsx";
 import "./index.css";
 import App from "./App.jsx";
 
@@ -43,6 +45,14 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPasswordPage />,
   },
   {
     path: "/admin",
