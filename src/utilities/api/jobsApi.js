@@ -225,8 +225,12 @@ export const createJob = async (payload) => {
       });
   }
 
-  // Let the browser/axios set multipart boundary automatically.
-  const { data } = await apiClient.post(JOB_ENDPOINTS.createJob, formData);
+  // Send FormData as multipart. Pass a content-type to allow axios to set the boundary.
+  const { data } = await apiClient.post(JOB_ENDPOINTS.createJob, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 
   return data;
 };

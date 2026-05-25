@@ -1,16 +1,132 @@
 import { Star, ChevronDown, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { submitApplication } from "../../utilities/api/interviewApi";
+import { getAllApplications, submitApplication } from "../../utilities/api/interviewApi";
 
 const JobDetails = ({ job }) => {
   const [showMore, setShowMore] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
+  const [isLoadingApplicationState, setIsLoadingApplicationState] = useState(false);
   const [applyError, setApplyError] = useState("");
+  const [existingApplication, setExistingApplication] = useState(null);
   const navigate = useNavigate();
 
   const previewParagraphs = job.description.slice(0, 3);
   const hiddenParagraphs = job.description.slice(3);
+
+  const normalizedStatus = useMemo(
+    () => String(existingApplication?.status || "").toLowerCase(),
+    [existingApplication?.status],
+  );
+
+  const applicationId =
+    existingApplication?.applicationId ||
+    existingApplication?.id ||
+    existingApplication?.ApplicationId ||
+    existingApplication?.Id;
+
+  const isBlocked =
+    normalizedStatus.includes("cheat") ||
+    normalizedStatus.includes("block") ||
+    normalizedStatus.includes("terminat");
+
+  const isApplied =
+    normalizedStatus.includes("complete") ||
+    normalizedStatus.includes("pass") ||
+    normalizedStatus.includes("accept") ||
+    normalizedStatus.includes("hire");
+
+  const isInProgress =
+    normalizedStatus.includes("interview") ||
+    normalizedStatus.includes("progress") ||
+    normalizedStatus.includes("screen");
+
+  const hasExistingApplication = Boolean(applicationId);
+
+  const applyButtonLabel = useMemo(() => {
+    if (isApplying) {
+      return "Creating application...";
+    }
+
+    if (isLoadingApplicationState) {
+      return "Checking status...";
+    }
+
+    if (isBlocked) {
+      return "Blocked";
+    }
+
+    if (isApplied) {
+      return "Applied";
+    }
+
+    if (hasExistingApplication) {
+      return "Applied";
+    }
+
+    return "Apply";
+  }, [hasExistingApplication, isApplied, isApplying, isBlocked, isLoadingApplicationState]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadExistingApplication = async () => {
+      if (!job?.id || !localStorage.getItem("token")) {
+        if (mounted) {
+          setExistingApplication(null);
+          setIsLoadingApplicationState(false);
+        }
+        return;
+      }
+
+      setIsLoadingApplicationState(true);
+
+      try {
+        const applications = await getAllApplications();
+
+        if (!mounted) {
+          return;
+        }
+
+        const targetJobId = String(job.id).toLowerCase();
+        const matchingApplication =
+          applications.find((item) => String(item.jobId || "").toLowerCase() === targetJobId) || null;
+
+        setExistingApplication(matchingApplication);
+      } catch {
+        if (mounted) {
+          setExistingApplication(null);
+        }
+      } finally {
+        if (mounted) {
+          setIsLoadingApplicationState(false);
+        }
+      }
+    };
+
+    loadExistingApplication();
+
+    return () => {
+      mounted = false;
+    };
+  }, [job?.id]);
+
+  const goToDisclaimer = (resolvedApplicationId) => {
+    if (!resolvedApplicationId) {
+      return;
+    }
+
+    navigate(`/interview/${resolvedApplicationId}/disclaimer`, {
+      state: {
+        applicationId: resolvedApplicationId,
+        jobId: job.id,
+        jobTitle: job.title,
+        companyName: job.company,
+        jobLocation: job.location,
+        jobSalary: job.salary,
+      },
+    });
+  };
 
   const handleApply = async () => {
     if (!job?.id) {
@@ -23,30 +139,35 @@ const JobDetails = ({ job }) => {
       return;
     }
 
+    if (isBlocked || isApplied) {
+      return;
+    }
+
+    if (hasExistingApplication) {
+      return;
+    }
+
     setApplyError("");
     setIsApplying(true);
 
     try {
       const application = await submitApplication(job.id);
-      const applicationId =
+      const createdApplicationId =
         application?.applicationId ||
         application?.id ||
         application?.ApplicationId ||
         application?.Id;
 
-      if (!applicationId) {
+      if (!createdApplicationId) {
         throw new Error("Application was created, but no application id was returned.");
       }
 
-      navigate(`/interview/${applicationId}/disclaimer`, {
-        state: {
-          applicationId,
-          jobId: job.id,
-          jobTitle: job.title,
-          companyName: job.company,
-          jobLocation: job.location,
-          jobSalary: job.salary,
-        },
+      setExistingApplication({
+        ...application,
+        applicationId: createdApplicationId,
+        id: createdApplicationId,
+        jobId: application?.jobId || job.id,
+        status: application?.status || "submitted",
       });
     } catch (error) {
       setApplyError(
@@ -93,19 +214,52 @@ const JobDetails = ({ job }) => {
           <button
             type="button"
             onClick={handleApply}
-            disabled={isApplying}
+            disabled={isApplying || isLoadingApplicationState || isBlocked || isApplied || hasExistingApplication}
             className="w-full rounded-lg bg-black px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#1F1F1F] disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
           >
-            {isApplying ? (
+            {isApplying || isLoadingApplicationState ? (
               <span className="inline-flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Starting application...
+                {applyButtonLabel}
               </span>
             ) : (
-              "Apply"
+              applyButtonLabel
             )}
           </button>
         </div>
+
+        {hasExistingApplication && !isBlocked && !isApplied && (
+          <div className="px-5 pb-4 md:px-7">
+            <div className="rounded-xl border border-[#E7D9D0] bg-[#FFF8F4] px-4 py-4">
+              <p className="text-sm text-[#7A3E1D]">
+                Your application has been received. To complete your application, you must take the virtual interview.
+              </p>
+              <button
+                type="button"
+                onClick={() => goToDisclaimer(applicationId)}
+                className="mt-3 rounded-lg bg-[#7A3E1D] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+              >
+                Start interview
+              </button>
+            </div>
+          </div>
+        )}
+
+        {isBlocked && (
+          <div className="px-5 pb-4 md:px-7">
+            <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              This application is blocked due to interview integrity violations. You cannot re-apply for this role.
+            </p>
+          </div>
+        )}
+
+        {isApplied && (
+          <div className="px-5 pb-4 md:px-7">
+            <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+              You already applied for this role.
+            </p>
+          </div>
+        )}
 
         {applyError && (
           <div className="px-5 pb-4 md:px-7">

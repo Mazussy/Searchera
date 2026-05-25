@@ -188,7 +188,7 @@ const ApplicationDetailsPage = () => {
                   }}
                   className="rounded-xl bg-[#7A3E1D] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
                 >
-                  Continue interview
+                  Start interview
                 </Link>
               )}
 

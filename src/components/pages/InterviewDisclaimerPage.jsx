@@ -55,7 +55,8 @@ const InterviewDisclaimerPage = () => {
           </div>
           <p>
             You are prohibited from cheating during this interview. Any detected cheating behavior
-            will lead to immediate termination of the interview session.
+            will lead to immediate termination of the interview session and permanent disqualification
+            from applying to this same job again.
           </p>
         </div>
 
@@ -66,6 +67,7 @@ const InterviewDisclaimerPage = () => {
             <li>2. Pasting and drag-and-drop input are disabled.</li>
             <li>3. Each question has a strict 5-minute timer.</li>
             <li>4. If time expires, that question is terminated and the session moves forward.</li>
+            <li className="font-semibold text-red-700">5. If cheating is detected, you will not be able to apply to this role again.</li>
           </ul>
         </div>
 
@@ -80,7 +82,7 @@ const InterviewDisclaimerPage = () => {
             />
             <label htmlFor="acknowledgement" className="text-sm text-gray-700">
               I acknowledge and accept this anti-cheating policy and understand that any violation
-              terminates my interview.
+              terminates my interview and blocks me from applying to this same role again.
             </label>
           </div>
         </div>
@@ -99,7 +101,7 @@ const InterviewDisclaimerPage = () => {
             className="inline-flex items-center gap-2 rounded-xl bg-[#7A3E1D] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <AlertTriangle className="h-4 w-4" />
-            Start interview
+            Start application
           </button>
           <Link
             to="/applications"

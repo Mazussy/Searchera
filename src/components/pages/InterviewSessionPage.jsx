@@ -10,6 +10,14 @@ import {
   submitInterviewAnswer,
 } from "../../utilities/api/interviewApi";
 
+const isValidQuestion = (question) =>
+  Boolean(
+    question?.questionId &&
+      typeof question?.prompt === "string" &&
+      question.prompt.trim().length > 0 &&
+      !question.isCompleted,
+  );
+
 const InterviewSessionPage = () => {
   const { applicationId } = useParams();
   const location = useLocation();
@@ -35,6 +43,8 @@ const InterviewSessionPage = () => {
   const [answer, setAnswer] = useState("");
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [questionLoading, setQuestionLoading] = useState(false);
+  const [loadingPhase, setLoadingPhase] = useState("starting-session");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [secondsRemaining, setSecondsRemaining] = useState(300);
@@ -98,35 +108,46 @@ const InterviewSessionPage = () => {
   );
 
   const loadNextQuestion = useCallback(
-    async (sid) => {
-      const nextPayload = await getNextInterviewQuestion(sid);
-      const nextQuestion = normalizeInterviewQuestion(
-        nextPayload?.question ??
-          nextPayload?.currentQuestion ??
-          nextPayload?.nextQuestion ??
-          nextPayload,
-      );
+    async (sid, options = {}) => {
+      const { firstQuestion = false } = options;
 
-      if (nextQuestion?.prompt && !nextQuestion.isCompleted) {
-        setCurrentQuestion(nextQuestion);
-        setAnswer("");
-        setSecondsRemaining(300);
-        pushAssistantMessage(nextQuestion);
-        return;
+      setQuestionLoading(true);
+      setLoadingPhase(firstQuestion ? "generating-first-question" : "loading-next-question");
+
+      try {
+        const nextPayload = await getNextInterviewQuestion(sid);
+        const nextQuestion = normalizeInterviewQuestion(
+          nextPayload?.question ??
+            nextPayload?.currentQuestion ??
+            nextPayload?.nextQuestion ??
+            nextPayload,
+        );
+
+        if (isValidQuestion(nextQuestion)) {
+          setCurrentQuestion(nextQuestion);
+          setAnswer("");
+          setSecondsRemaining(300);
+          pushAssistantMessage(nextQuestion);
+          setLoadingPhase("ready");
+          return true;
+        }
+
+        if (nextPayload?.result) {
+          navigate(`/interview-results/${sid}`, {
+            state: {
+              ...applicationMeta,
+              sessionId: sid,
+              result: normalizeInterviewResult(nextPayload.result),
+            },
+          });
+          return false;
+        }
+
+        await finishSession(sid);
+        return false;
+      } finally {
+        setQuestionLoading(false);
       }
-
-      if (nextPayload?.result) {
-        navigate(`/interview-results/${sid}`, {
-          state: {
-            ...applicationMeta,
-            sessionId: sid,
-            result: normalizeInterviewResult(nextPayload.result),
-          },
-        });
-        return;
-      }
-
-      await finishSession(sid);
     },
     [applicationMeta, finishSession, navigate, pushAssistantMessage],
   );
@@ -164,12 +185,16 @@ const InterviewSessionPage = () => {
 
     const initializeInterview = async () => {
       setLoading(true);
+      setQuestionLoading(false);
+      setLoadingPhase("starting-session");
       setError("");
       setIsTerminated(false);
       setTerminationReason("");
       setPasteMessage("");
+      setCurrentQuestion(null);
 
       try {
+        setLoadingPhase("starting-session");
         const startPayload = await startInterview(applicationId);
         const resolvedSessionId =
           startPayload?.sessionId ||
@@ -187,6 +212,8 @@ const InterviewSessionPage = () => {
 
         setSessionId(resolvedSessionId);
 
+        setLoadingPhase("generating-first-question");
+
         const initialQuestion = normalizeInterviewQuestion(
           startPayload?.question ??
             startPayload?.currentQuestion ??
@@ -194,11 +221,14 @@ const InterviewSessionPage = () => {
             startPayload,
         );
 
-        if (initialQuestion?.prompt && !initialQuestion.isCompleted) {
+        if (isValidQuestion(initialQuestion)) {
           setCurrentQuestion(initialQuestion);
+          setAnswer("");
+          setSecondsRemaining(300);
           pushAssistantMessage(initialQuestion);
+          setLoadingPhase("ready");
         } else {
-          await loadNextQuestion(resolvedSessionId);
+          await loadNextQuestion(resolvedSessionId, { firstQuestion: true });
         }
       } catch (err) {
         if (!mounted) {
@@ -226,7 +256,7 @@ const InterviewSessionPage = () => {
   }, [applicationId, disclaimerKey, loadNextQuestion, location.state, navigate, pushAssistantMessage]);
 
   useEffect(() => {
-    if (!currentQuestion?.questionId || loading || submitting || isTerminated) {
+    if (!currentQuestion?.questionId || loading || submitting || isTerminated || questionLoading) {
       return;
     }
 
@@ -237,7 +267,7 @@ const InterviewSessionPage = () => {
     return () => {
       window.clearInterval(timerId);
     };
-  }, [currentQuestion?.questionId, loading, submitting, isTerminated]);
+  }, [currentQuestion?.questionId, loading, questionLoading, submitting, isTerminated]);
 
   useEffect(() => {
     if (loading || !sessionId || isTerminated) {
@@ -278,6 +308,11 @@ const InterviewSessionPage = () => {
     setPasteMessage("");
 
     try {
+      await submitInterviewAnswer({
+        questionId: currentQuestion.questionId,
+        responseText: "",
+      });
+
       setHistory((previous) => [
         ...previous,
         {
@@ -286,11 +321,7 @@ const InterviewSessionPage = () => {
         },
       ]);
 
-      await submitInterviewAnswer({
-        questionId: currentQuestion.questionId,
-        responseText: "",
-      });
-
+      setCurrentQuestion(null);
       await loadNextQuestion(sessionId);
     } catch (err) {
       setError(
@@ -313,7 +344,9 @@ const InterviewSessionPage = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!currentQuestion?.questionId || !answer.trim() || !sessionId || isTerminated) {
+    const trimmedAnswer = answer.trim();
+
+    if (!isValidQuestion(currentQuestion) || !trimmedAnswer || !sessionId || isTerminated || questionLoading) {
       return;
     }
 
@@ -321,19 +354,20 @@ const InterviewSessionPage = () => {
     setError("");
 
     try {
+      await submitInterviewAnswer({
+        questionId: currentQuestion.questionId,
+        responseText: trimmedAnswer,
+      });
+
       setHistory((previous) => [
         ...previous,
         {
           role: "user",
-          content: answer.trim(),
+          content: trimmedAnswer,
         },
       ]);
 
-      await submitInterviewAnswer({
-        questionId: currentQuestion.questionId,
-        responseText: answer.trim(),
-      });
-
+      setCurrentQuestion(null);
       await loadNextQuestion(sessionId);
     } catch (err) {
       setError(
@@ -348,6 +382,14 @@ const InterviewSessionPage = () => {
   };
 
   const transcript = history.length > 0 ? history : [];
+  const hasQuestionReady = isValidQuestion(currentQuestion);
+
+  const loadingCopy = {
+    "starting-session": "Starting your interview session...",
+    "generating-first-question": "AI is generating your first interview question...",
+    "loading-next-question": "AI is generating your next question...",
+    ready: "Preparing your interview session...",
+  };
 
   const handlePasteBlocked = (event) => {
     event.preventDefault();
@@ -426,7 +468,7 @@ const InterviewSessionPage = () => {
             {loading ? (
               <div className="flex items-center gap-3 rounded-3xl border border-dashed border-[#F1DED3] bg-[#FFF8F4] px-5 py-8 text-sm text-gray-600">
                 <Loader2 className="h-5 w-5 animate-spin text-[#C26A42]" />
-                Preparing your interview session...
+                {loadingCopy[loadingPhase] || loadingCopy.ready}
               </div>
             ) : (
               <>
@@ -461,7 +503,19 @@ const InterviewSessionPage = () => {
                   )}
                 </div>
 
-                {currentQuestion?.prompt && !isTerminated && (
+                {questionLoading && !isTerminated && (
+                  <div className="rounded-3xl border border-dashed border-[#F1DED3] bg-[#FFF8F4] px-5 py-7 text-sm text-gray-600">
+                    <div className="inline-flex items-center gap-2 font-medium text-[#7A3E1D]">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {loadingCopy[loadingPhase] || "AI is generating the next question..."}
+                    </div>
+                    <p className="mt-2 text-xs text-gray-500">
+                      Please wait while we prepare the next question.
+                    </p>
+                  </div>
+                )}
+
+                {hasQuestionReady && !isTerminated && !questionLoading && (
                   <form onSubmit={handleSubmit} className="rounded-3xl border border-[#F1DED3] bg-white p-4 shadow-sm">
                     <div className="flex items-center gap-2 text-sm font-medium text-[#7A3E1D]">
                       <MessageSquareText className="h-4 w-4" />
@@ -482,7 +536,7 @@ const InterviewSessionPage = () => {
                       </p>
                       <button
                         type="submit"
-                        disabled={submitting || !answer.trim() || isTerminated}
+                        disabled={submitting || !answer.trim() || isTerminated || questionLoading}
                         className="inline-flex items-center gap-2 rounded-xl bg-[#7A3E1D] px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {submitting ? (
