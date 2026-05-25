@@ -12,6 +12,15 @@ import ProfilePage from "./components/pages/ProfilePage.jsx";
 import ForEmployersPage from "./components/pages/ForEmployersPage.jsx";
 import ForgotPasswordPage from "./components/pages/ForgotPasswordPage.jsx";
 import ResetPasswordPage from "./components/pages/ResetPasswordPage.jsx";
+import MyApplicationsPage from "./components/pages/MyApplicationsPage.jsx";
+import InterviewSessionPage from "./components/pages/InterviewSessionPage.jsx";
+import InterviewResultsPage from "./components/pages/InterviewResultsPage.jsx";
+import InterviewDisclaimerPage from "./components/pages/InterviewDisclaimerPage.jsx";
+import ApplicationDetailsPage from "./components/pages/ApplicationDetailsPage.jsx";
+import EmployerApplicationsPage from "./components/pages/EmployerApplicationsPage.jsx";
+import EmployerApplicationReviewPage from "./components/pages/EmployerApplicationReviewPage.jsx";
+import RequireAuth from "./components/common/RequireAuth.jsx";
+import RequireEmployer from "./components/common/RequireEmployer.jsx";
 import "./index.css";
 import App from "./App.jsx";
 
@@ -33,12 +42,50 @@ const router = createBrowserRouter([
         element: <Companies />,
       },
       {
-        path: "profile",
-        element: <ProfilePage />,
-      },
-      {
         path: "for-employers",
         element: <ForEmployersPage />,
+      },
+      {
+        element: <RequireAuth />,
+        children: [
+          {
+            path: "profile",
+            element: <ProfilePage />,
+          },
+          {
+            path: "applications",
+            element: <MyApplicationsPage />,
+          },
+          {
+            path: "applications/:applicationId",
+            element: <ApplicationDetailsPage />,
+          },
+          {
+            path: "interview/:applicationId/disclaimer",
+            element: <InterviewDisclaimerPage />,
+          },
+          {
+            path: "interview/:applicationId",
+            element: <InterviewSessionPage />,
+          },
+          {
+            path: "interview-results/:sessionId",
+            element: <InterviewResultsPage />,
+          },
+        ],
+      },
+      {
+        element: <RequireEmployer />,
+        children: [
+          {
+            path: "employer/applications",
+            element: <EmployerApplicationsPage />,
+          },
+          {
+            path: "employer/applications/:applicationId",
+            element: <EmployerApplicationReviewPage />,
+          },
+        ],
       },
     ],
   },

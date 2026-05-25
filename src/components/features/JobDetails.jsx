@@ -1,11 +1,64 @@
-import { Star, ChevronDown } from "lucide-react";
+import { Star, ChevronDown, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { submitApplication } from "../../utilities/api/interviewApi";
 
 const JobDetails = ({ job }) => {
   const [showMore, setShowMore] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
+  const [applyError, setApplyError] = useState("");
+  const navigate = useNavigate();
 
   const previewParagraphs = job.description.slice(0, 3);
   const hiddenParagraphs = job.description.slice(3);
+
+  const handleApply = async () => {
+    if (!job?.id) {
+      setApplyError("This job cannot be applied to right now.");
+      return;
+    }
+
+    if (!localStorage.getItem("token")) {
+      navigate("/login");
+      return;
+    }
+
+    setApplyError("");
+    setIsApplying(true);
+
+    try {
+      const application = await submitApplication(job.id);
+      const applicationId =
+        application?.applicationId ||
+        application?.id ||
+        application?.ApplicationId ||
+        application?.Id;
+
+      if (!applicationId) {
+        throw new Error("Application was created, but no application id was returned.");
+      }
+
+      navigate(`/interview/${applicationId}/disclaimer`, {
+        state: {
+          applicationId,
+          jobId: job.id,
+          jobTitle: job.title,
+          companyName: job.company,
+          jobLocation: job.location,
+          jobSalary: job.salary,
+        },
+      });
+    } catch (error) {
+      setApplyError(
+        error?.response?.data?.message ||
+          error?.response?.data?.title ||
+          error?.message ||
+          "Unable to start the application.",
+      );
+    } finally {
+      setIsApplying(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -37,10 +90,30 @@ const JobDetails = ({ job }) => {
             </div>
           </div>
 
-          <button className="w-full rounded-lg bg-black px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#1F1F1F] sm:w-auto">
-            Apply
+          <button
+            type="button"
+            onClick={handleApply}
+            disabled={isApplying}
+            className="w-full rounded-lg bg-black px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#1F1F1F] disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+          >
+            {isApplying ? (
+              <span className="inline-flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Starting application...
+              </span>
+            ) : (
+              "Apply"
+            )}
           </button>
         </div>
+
+        {applyError && (
+          <div className="px-5 pb-4 md:px-7">
+            <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {applyError}
+            </p>
+          </div>
+        )}
 
         {job.resumeMatch && (
           <div className="border-t border-[#E7D9D0] bg-[#FFF0E8] px-5 py-4 md:px-7">

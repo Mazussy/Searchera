@@ -100,6 +100,12 @@ function Navbar() {
   const isLoggedIn = !!localStorage.getItem("token");
 
   const isAdmin = localStorage.getItem("isAdmin") === "true";
+  const roleRaw =
+    localStorage.getItem("userType") ||
+    localStorage.getItem("role") ||
+    "";
+  const normalizedRole = String(roleRaw).toLowerCase();
+  const isEmployer = normalizedRole.includes("employer") || normalizedRole.includes("company") || isAdmin;
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -467,6 +473,22 @@ function Navbar() {
                     >
                       Profile
                     </Link>
+                    <Link
+                      to="/applications"
+                      onClick={() => setIsProfileMenuOpen(false)}
+                      className="mt-1 flex w-full items-center rounded-xl px-3 py-2 text-sm font-poppins-medium text-[#1A1A1A] transition-colors hover:bg-[#FFF3ED] hover:text-primary-accent"
+                    >
+                      My Applications
+                    </Link>
+                    {isEmployer && (
+                      <Link
+                        to="/employer/applications"
+                        onClick={() => setIsProfileMenuOpen(false)}
+                        className="mt-1 flex w-full items-center rounded-xl px-3 py-2 text-sm font-poppins-medium text-[#1A1A1A] transition-colors hover:bg-[#FFF3ED] hover:text-primary-accent"
+                      >
+                        Employer Reviews
+                      </Link>
+                    )}
                     {isAdmin && (
                       <Link
                         to="/admin"
@@ -585,6 +607,22 @@ function Navbar() {
                 className="block text-primary hover:text-primary-accent font-medium text-sm py-2 transition-colors duration-200"
               >
                 My Profile
+              </a>
+            )}
+            {isLoggedIn && (
+              <a
+                href="/applications"
+                className="block text-primary hover:text-primary-accent font-medium text-sm py-2 transition-colors duration-200"
+              >
+                My Applications
+              </a>
+            )}
+            {isLoggedIn && isEmployer && (
+              <a
+                href="/employer/applications"
+                className="block text-primary hover:text-primary-accent font-medium text-sm py-2 transition-colors duration-200"
+              >
+                Employer Reviews
               </a>
             )}
             {isLoggedIn && (
