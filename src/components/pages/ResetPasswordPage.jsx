@@ -11,9 +11,20 @@ const passwordRules = [
   { id: "special", label: "At least one special character", test: (value) => /[^A-Za-z0-9]/.test(value) },
 ];
 
+const getQueryParam = (searchParams, keys) => {
+  for (const key of keys) {
+    const value = searchParams.get(key);
+    if (value) {
+      return value;
+    }
+  }
+
+  return "";
+};
+
 const ResetPasswordPage = () => {
   const [searchParams] = useSearchParams();
-  const [email, setEmail] = useState(searchParams.get("email") || "");
+  const [email, setEmail] = useState(() => getQueryParam(searchParams, ["email", "EmailId"]));
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,7 +32,7 @@ const ResetPasswordPage = () => {
   const [error, setError] = useState("");
 
   const token = useMemo(() => {
-    const rawToken = searchParams.get("token") || "";
+    const rawToken = getQueryParam(searchParams, ["token", "Token"]);
     return rawToken;
   }, [searchParams]);
 
