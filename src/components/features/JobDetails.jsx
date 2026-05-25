@@ -1,7 +1,8 @@
 import { Star, ChevronDown, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllApplications, submitApplication } from "../../utilities/api/interviewApi";
+import { submitApplication } from "../../utilities/api/interviewApi";
+import { useApplications } from "../../contexts/ApplicationContext";
 
 const JobDetails = ({ job }) => {
   const [showMore, setShowMore] = useState(false);
@@ -67,49 +68,15 @@ const JobDetails = ({ job }) => {
     return "Apply";
   }, [hasExistingApplication, isApplied, isApplying, isBlocked, isLoadingApplicationState]);
 
+  const { applicationsMap, loading: appsLoading } = useApplications();
+
   useEffect(() => {
-    let mounted = true;
+    if (!job?.id) return;
 
-    const loadExistingApplication = async () => {
-      if (!job?.id || !localStorage.getItem("token")) {
-        if (mounted) {
-          setExistingApplication(null);
-          setIsLoadingApplicationState(false);
-        }
-        return;
-      }
-
-      setIsLoadingApplicationState(true);
-
-      try {
-        const applications = await getAllApplications();
-
-        if (!mounted) {
-          return;
-        }
-
-        const targetJobId = String(job.id).toLowerCase();
-        const matchingApplication =
-          applications.find((item) => String(item.jobId || "").toLowerCase() === targetJobId) || null;
-
-        setExistingApplication(matchingApplication);
-      } catch {
-        if (mounted) {
-          setExistingApplication(null);
-        }
-      } finally {
-        if (mounted) {
-          setIsLoadingApplicationState(false);
-        }
-      }
-    };
-
-    loadExistingApplication();
-
-    return () => {
-      mounted = false;
-    };
-  }, [job?.id]);
+    const entry = applicationsMap[String(job.id)] || null;
+    setExistingApplication(entry);
+    setIsLoadingApplicationState(Boolean(appsLoading));
+  }, [applicationsMap, appsLoading, job?.id]);
 
   const goToDisclaimer = (resolvedApplicationId) => {
     if (!resolvedApplicationId) {

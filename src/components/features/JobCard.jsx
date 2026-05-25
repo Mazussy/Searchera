@@ -1,6 +1,12 @@
 import { Star } from "lucide-react";
+import { useApplications } from "../../contexts/ApplicationContext";
 
 const JobCard = ({ job, isSelected, onClick }) => {
+  const { applicationsMap } = useApplications();
+  const app = applicationsMap[String(job.id)];
+  const status = String(app?.status || "").toLowerCase();
+  const isApplied = status.includes("complete") || status.includes("pass") || status.includes("submitted") || Boolean(app);
+  const isBlocked = status.includes("cheat") || status.includes("block") || status.includes("terminat");
   return (
     <div
       onClick={onClick}
@@ -34,6 +40,18 @@ const JobCard = ({ job, isSelected, onClick }) => {
             <p>{job.location}</p>
             <p>{job.salary}</p>
           </div>
+
+          {isApplied && (
+            <div className="mt-2 inline-flex items-center gap-2">
+              <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700">Applied</span>
+            </div>
+          )}
+
+          {isBlocked && (
+            <div className="mt-2 inline-flex items-center gap-2">
+              <span className="rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700">Blocked</span>
+            </div>
+          )}
 
           <div className="mt-2 text-right text-xs text-[#9A9A9A]">{job.postedTime}</div>
         </div>

@@ -23,6 +23,7 @@ import RequireAuth from "./components/common/RequireAuth.jsx";
 import RequireEmployer from "./components/common/RequireEmployer.jsx";
 import "./index.css";
 import App from "./App.jsx";
+import { ApplicationProvider } from "./contexts/ApplicationContext";
 
 const router = createBrowserRouter([
   {
@@ -117,6 +118,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <ApplicationProvider>
+      <RouterProvider router={router} />
+    </ApplicationProvider>
   </StrictMode>,
 );
