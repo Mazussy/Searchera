@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { Github } from "lucide-react";
 import { login } from "../../utilities/api/authApi";
 import { API_BASE_URL } from "../../utilities/api/client";
 import GoogleIcon from "../../assets/images/Google__G__logo.svg.png";
-import LinkedInIcon from "../../assets/images/LinkedIn_icon.svg.png";
 import AuthHero from "../../assets/images/72be0103c7bc9699eb45bcda9cc0d1c0fd2b75fa.jpg";
 
 const parseJwtPayload = (token) => {
@@ -71,13 +71,13 @@ const LoginPage = () => {
 
     try {
       const data = await login(formData.email, formData.password);
-      
+
       // Save token to localStorage
       if (data.token) {
         localStorage.setItem("token", data.token);
         persistUserRole(data);
       }
-      
+
       // Redirect to jobs page
       window.location.href = "/jobs";
     } catch (err) {
@@ -151,7 +151,10 @@ const LoginPage = () => {
                 <label className="text-sm font-medium text-primary">
                   Password
                 </label>
-                <Link to="/forgot-password" className="text-xs text-blue-600 hover:underline">
+                <Link
+                  to="/forgot-password"
+                  className="text-xs text-blue-600 hover:underline"
+                >
                   forgot password
                 </Link>
               </div>
@@ -204,25 +207,17 @@ const LoginPage = () => {
               className="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm
                                hover:bg-gray-100 transition flex items-center justify-center gap-2"
             >
-              <img
-                src={GoogleIcon}
-                alt="Google"
-                className="w-4 h-4"
-              />
+              <img src={GoogleIcon} alt="Google" className="w-4 h-4" />
               Sign in with Google
             </button>
             <button
               type="button"
-              onClick={() => handleExternalLogin("LinkedIn")}
+              onClick={() => handleExternalLogin("GitHub")}
               className="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm
                                hover:bg-gray-100 transition flex items-center justify-center gap-2"
             >
-              <img
-                src={LinkedInIcon}
-                alt="LinkedIn"
-                className="w-4 h-4"
-              />
-              Sign in with LinkedIn
+              <Github className="w-4 h-4" />
+              Sign in with GitHub
             </button>
           </div>
 
@@ -262,9 +257,13 @@ const LoginPage = () => {
             </p>
 
             <div className="space-y-4">
-              <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition hover:bg-gray-50 ${
-                selectedRole === 'JobSeeker' ? 'border-gray-300 bg-orange-50' : 'border-gray-100'
-              }`}>
+              <label
+                className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition hover:bg-gray-50 ${
+                  selectedRole === "JobSeeker"
+                    ? "border-gray-300 bg-orange-50"
+                    : "border-gray-100"
+                }`}
+              >
                 <input
                   type="radio"
                   name="role"
@@ -272,17 +271,25 @@ const LoginPage = () => {
                   checked={selectedRole === "JobSeeker"}
                   onChange={(e) => setSelectedRole(e.target.value)}
                   className="w-5 h-5 text-primary-accent focus:ring-primary-accent cursor-pointer"
-                  style={{ accentColor: '#D3571F' }}
+                  style={{ accentColor: "#D3571F" }}
                 />
                 <div>
-                  <div className="font-medium text-primary font-poppins">Job Seeker</div>
-                  <div className="text-xs text-gray-500 font-poppins">Looking for opportunities</div>
+                  <div className="font-medium text-primary font-poppins">
+                    Job Seeker
+                  </div>
+                  <div className="text-xs text-gray-500 font-poppins">
+                    Looking for opportunities
+                  </div>
                 </div>
               </label>
 
-              <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition hover:bg-gray-50 ${
-                selectedRole === 'Employer' ? 'border-gray-300 bg-orange-50' : 'border-gray-100'
-              }`}>
+              <label
+                className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition hover:bg-gray-50 ${
+                  selectedRole === "Employer"
+                    ? "border-gray-300 bg-orange-50"
+                    : "border-gray-100"
+                }`}
+              >
                 <input
                   type="radio"
                   name="role"
@@ -290,11 +297,15 @@ const LoginPage = () => {
                   checked={selectedRole === "Employer"}
                   onChange={(e) => setSelectedRole(e.target.value)}
                   className="w-5 h-5 text-primary-accent focus:ring-primary-accent cursor-pointer"
-                  style={{ accentColor: '#D3571F' }}
+                  style={{ accentColor: "#D3571F" }}
                 />
                 <div>
-                  <div className="font-medium text-primary font-poppins">Employer</div>
-                  <div className="text-xs text-gray-500 font-poppins">Hiring talent</div>
+                  <div className="font-medium text-primary font-poppins">
+                    Employer
+                  </div>
+                  <div className="text-xs text-gray-500 font-poppins">
+                    Hiring talent
+                  </div>
                 </div>
               </label>
             </div>
