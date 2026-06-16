@@ -161,16 +161,18 @@ const JobDetails = ({ job }) => {
 
             <div className="min-w-0">
               <div className="mb-1 flex items-center gap-3 text-[#292624]">
-                <span className="text-xl font-avro font-normal leading-none sm:text-2xl md:text-3xl">{job.company}</span>
+                <span className="text-lg font-avro font-normal leading-none sm:text-xl md:text-2xl">
+                  {job.company}
+                </span>
                 <div className="flex items-center gap-1 text-xs font-normal sm:text-sm">
                   <span>{job.rating}</span>
                   <Star className="h-3.5 w-3.5 fill-current" />
                 </div>
               </div>
-              <h2 className="mb-1 text-2xl font-poppins-semibold leading-tight text-[#141414] sm:text-3xl md:text-4xl">
+              <h2 className="mb-1 text-xl font-poppins-semibold leading-tight text-[#141414] sm:text-2xl md:text-3xl">
                 {job.title}
               </h2>
-              <div className="flex flex-wrap gap-2 text-sm text-[#6A6A6A] sm:text-base md:text-xl">
+              <div className="flex flex-wrap gap-2 text-sm text-[#6A6A6A] sm:text-base md:text-lg">
                 <span>{job.location}</span>
                 <span>·</span>
                 <span>{job.salary}</span>
@@ -238,7 +240,7 @@ const JobDetails = ({ job }) => {
 
         {job.resumeMatch && (
           <div className="border-t border-[#E7D9D0] bg-[#FFF0E8] px-5 py-4 md:px-7">
-            <h3 className="text-xl font-poppins-medium text-[#E26F3A] sm:text-2xl md:text-3xl">
+            <h3 className="text-lg font-poppins-medium text-[#E26F3A] sm:text-xl md:text-2xl">
               Is your resume a good match?
             </h3>
             <p className="mt-1 text-[14px] text-[#EE8B5B]">
@@ -253,10 +255,10 @@ const JobDetails = ({ job }) => {
       </section>
 
       <section className="rounded-2xl border border-[#DADADA] bg-white px-5 py-5 md:px-7">
-        <h3 className="mb-4 text-2xl font-poppins-semibold text-[#1B1B1B] sm:text-3xl md:text-4xl">
+        <h3 className="mb-4 text-lg font-poppins-semibold text-[#1B1B1B] sm:text-xl md:text-2xl">
           About {job.company}
         </h3>
-        <div className="space-y-4 text-base leading-relaxed text-[#2C2C2C]">
+        <div className="space-y-4 text-sm leading-relaxed text-[#2C2C2C] sm:text-[15px]">
           {previewParagraphs.map((paragraph, index) => (
             <p key={index}>{paragraph}</p>
           ))}
@@ -275,11 +277,11 @@ const JobDetails = ({ job }) => {
               <p key={`${paragraph.slice(0, 20)}-${index}`}>{paragraph}</p>
             ))}
 
-          {showMore && job.fullDescription?.length > 0 && (
+          {showMore &&
+            job.fullDescription?.length > 0 &&
             job.fullDescription.map((paragraph, index) => (
               <p key={`${paragraph.slice(0, 20)}-full-${index}`}>{paragraph}</p>
-            ))
-          )}
+            ))}
         </div>
       </section>
     </div>

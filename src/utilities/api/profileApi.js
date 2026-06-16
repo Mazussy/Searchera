@@ -6,9 +6,13 @@ export const getProfile = async () => {
 };
 
 export const completeProfile = async (formData) => {
-  const { data } = await apiClient.post("/api/Profile/CompleteProfile", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  const { data } = await apiClient.post(
+    "/api/Profile/CompleteProfile",
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    },
+  );
   return data;
 };
 
