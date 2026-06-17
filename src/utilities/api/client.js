@@ -5,7 +5,7 @@ import axios from "axios";
 // and avoid CORS issues. In production fall back to the hosted API URL.
 export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ??
-  (import.meta.env.DEV ? "" : "https://searchera26-001-site1.gtempurl.com");
+  (import.meta.env.DEV ? "" : "https://searchera26-001-site1.atempurl.com");
 
 const tokenKeys = ["token", "accessToken", "authToken", "jwt"];
 
