@@ -1,11 +1,9 @@
 import axios from "axios";
 
-// Prefer an explicit `VITE_API_BASE_URL` when provided. During local development
-// use a relative base (`''`) so the Vite dev server can proxy `/api` requests
-// and avoid CORS issues. In production fall back to the hosted API URL.
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ??
-  (import.meta.env.DEV ? "" : "https://searchera26-001-site1.gtempurl.com");
+// Prefer an explicit `VITE_API_BASE_URL` when provided. Default to a relative
+// base so both Vite dev and deployed rewrites can proxy `/api` requests and
+// keep browser traffic same-origin.
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
 const tokenKeys = ["token", "accessToken", "authToken", "jwt"];
 
