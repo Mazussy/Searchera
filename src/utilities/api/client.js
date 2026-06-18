@@ -1,9 +1,5 @@
 import axios from "axios";
 
-const LEGACY_API_BASE_URLS = new Set([
-  "https://searchera-001-site1.rtempurl.com",
-]);
-
 const normalizeBaseUrl = (value) => {
   if (!value) {
     return "";
@@ -14,15 +10,10 @@ const normalizeBaseUrl = (value) => {
 
 // Prefer an explicit `VITE_API_BASE_URL` when provided. During local development
 // use a relative base (`''`) so the Vite dev server can proxy `/api` requests
-// and avoid CORS issues. In production fall back to the hosted API URL.
+// and avoid CORS issues. In production also use the same-origin `/api` path so
+// the deployment proxy can forward requests without exposing the browser to CORS.
 const envApiBaseUrl = normalizeBaseUrl(import.meta.env.VITE_API_BASE_URL);
-const fallbackApiBaseUrl = import.meta.env.DEV
-  ? ""
-  : "https://searchera26-001-site1.gtempurl.com";
-
-export const API_BASE_URL = LEGACY_API_BASE_URLS.has(envApiBaseUrl)
-  ? fallbackApiBaseUrl
-  : envApiBaseUrl || fallbackApiBaseUrl;
+export const API_BASE_URL = envApiBaseUrl || "";
 
 const tokenKeys = ["token", "accessToken", "authToken", "jwt"];
 
