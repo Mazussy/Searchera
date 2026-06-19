@@ -40,16 +40,13 @@ const formatDate = (value) => {
 };
 
 const StarRating = ({ value = 0 }) => {
-  const active = Math.round(Number(value) || 0);
-
+  const numValue = Number(value) || 0;
   return (
-    <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map((item) => (
-        <Star
-          key={item}
-          className={`h-4 w-4 ${item <= active ? "fill-primary-accent text-primary-accent" : "fill-gray-200 text-gray-200"}`}
-        />
-      ))}
+    <div className="flex items-center gap-1 bg-[#FFF2EA] px-2.5 py-1 rounded-lg border border-[#F1DED3]">
+      <Star className="h-3.5 w-3.5 fill-primary-accent text-primary-accent" />
+      <span className="text-xs font-poppins-semibold text-[#1B1B1B]">
+        {numValue > 0 ? `${numValue.toFixed(1)}/5` : "—/5"}
+      </span>
     </div>
   );
 };
@@ -375,9 +372,6 @@ const CompanyDetailsPage = () => {
                   <div className="rounded-2xl border border-[#F1DED3] bg-[#FFF8F4] p-4">
                     <p className="text-xs font-poppins-medium uppercase tracking-[0.16em] text-gray-400">Rating</p>
                     <div className="mt-2 flex items-center gap-2">
-                      <span className="text-3xl font-poppins-semibold text-[#1B1B1B]">
-                        {averageRating > 0 ? averageRating.toFixed(1) : "—"}
-                      </span>
                       <StarRating value={averageRating} />
                     </div>
                   </div>
@@ -408,14 +402,6 @@ const CompanyDetailsPage = () => {
                     <div className="rounded-2xl border border-[#F1DED3] bg-[#FFF8F4] p-4">
                       <p className="text-xs font-poppins-medium uppercase tracking-[0.16em] text-gray-400">Location</p>
                       <p className="mt-2 text-sm text-gray-700">{companyLocation || "Not listed"}</p>
-                    </div>
-                    <div className="rounded-2xl border border-[#F1DED3] bg-[#FFF8F4] p-4">
-                      <p className="text-xs font-poppins-medium uppercase tracking-[0.16em] text-gray-400">Employees</p>
-                      <p className="mt-2 text-sm text-gray-700">{company?.employeeCount || location.state?.company?.employeeCount || "Not listed"}</p>
-                    </div>
-                    <div className="rounded-2xl border border-[#F1DED3] bg-[#FFF8F4] p-4">
-                      <p className="text-xs font-poppins-medium uppercase tracking-[0.16em] text-gray-400">Founded</p>
-                      <p className="mt-2 text-sm text-gray-700">{formatDate(company?.foundedAt || location.state?.company?.foundedAt)}</p>
                     </div>
                   </div>
                 </section>

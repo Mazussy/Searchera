@@ -5,6 +5,7 @@ import LoginPage from "./components/pages/loginPage.jsx";
 import RegisterPage from "./components/pages/registerPage.jsx";
 import NotFoundPage from "./components/pages/NotFoundPage.jsx";
 import Companies from "./components/pages/Companies.jsx";
+import CompanyDetailsPage from "./components/pages/CompanyDetailsPage.jsx";
 import Jobs from "./components/pages/Jobs.jsx";
 import LandingPage from "./components/pages/LandingPage.jsx";
 import AdminDashboard from "./components/pages/AdminDashboard.jsx";
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
       {
         path: "companies",
         element: <Companies />,
+      },
+      {
+        path: "companies/:companyId",
+        element: <CompanyDetailsPage />,
       },
       {
         path: "for-employers",

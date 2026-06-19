@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { Star, Globe, Building2, Search, Users } from "lucide-react";
 import { getAllCompanies } from "../../utilities/api/companiesApi";
 
@@ -15,15 +16,12 @@ const normalizeCompany = (raw = {}) => ({
 });
 
 const StarRating = ({ value }) => {
-  const filled = Math.round(value);
   return (
-    <div className="flex items-center gap-0.5">
-      {[1,2,3,4,5].map((i) => (
-        <Star
-          key={i}
-          className={`w-3.5 h-3.5 ${i <= filled ? "fill-[#D3571F] text-[#D3571F]" : "text-gray-200 fill-gray-200"}`}
-        />
-      ))}
+    <div className="flex items-center gap-1 bg-[#FFF2EA] px-2.5 py-1 rounded-lg border border-[#F1DED3]">
+      <Star className="w-3.5 h-3.5 fill-[#D3571F] text-[#D3571F]" />
+      <span className="text-xs font-poppins-semibold text-[#1a1a1a]">
+        {value > 0 ? `${Number(value).toFixed(1)}/5` : "—/5"}
+      </span>
     </div>
   );
 };
@@ -31,7 +29,11 @@ const StarRating = ({ value }) => {
 const CompanyCard = ({ company }) => {
   const initials = company.companyName.slice(0, 2).toUpperCase();
   return (
-    <div className="bg-white border border-[#4242425C]/20 rounded-2xl p-5 flex flex-col gap-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
+    <Link
+      to={`/companies/${company.id}`}
+      state={{ company }}
+      className="bg-white border border-[#4242425C]/20 rounded-2xl p-5 flex flex-col gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group cursor-pointer block"
+    >
       {/* Header */}
       <div className="flex items-start gap-4">
         {company.logoUrl ? (
@@ -57,26 +59,27 @@ const CompanyCard = ({ company }) => {
       </div>
 
       {/* Description */}
-      {company.description && (
-        <p className="text-[13px] font-poppins text-[#4a4a4a] line-clamp-2 leading-relaxed">
+      {company.description ? (
+        <p className="text-[13px] font-poppins text-[#4a4a4a] line-clamp-2 leading-relaxed h-9">
           {company.description}
+        </p>
+      ) : (
+        <p className="text-[13px] font-poppins text-gray-400 italic line-clamp-2 leading-relaxed h-9">
+          No description available.
         </p>
       )}
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-1 border-t border-[#4242425C]/10 mt-auto">
-        <div className="flex flex-col gap-0.5">
+      <div className="flex items-center justify-between pt-3 border-t border-[#4242425C]/10 mt-auto">
+        <div className="flex flex-col gap-1 items-start">
           <StarRating value={company.averageRating} />
-          <div className="flex items-center gap-1">
+          {company.reviewCount > 0 ? (
             <span className="text-[11px] font-poppins text-gray-400">
-              {company.averageRating > 0 ? company.averageRating.toFixed(1) : "—"}
+              {company.reviewCount} {company.reviewCount === 1 ? "review" : "reviews"}
             </span>
-            {company.reviewCount > 0 && (
-              <span className="text-[11px] font-poppins text-gray-400">
-                · {company.reviewCount} reviews
-              </span>
-            )}
-          </div>
+          ) : (
+            <span className="text-[11px] font-poppins text-gray-400">No reviews</span>
+          )}
         </div>
         {company.website ? (
           <a
@@ -84,7 +87,7 @@ const CompanyCard = ({ company }) => {
             target="_blank"
             rel="noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1.5 text-xs font-poppins-medium text-[#D3571F] hover:text-[#B8461A] transition-colors"
+            className="flex items-center gap-1 text-xs font-poppins-medium text-[#D3571F] hover:text-[#B8461A] transition-colors bg-[#FFECE3] hover:bg-[#FFDFCE] px-3 py-1.5 rounded-lg"
           >
             <Globe className="w-3.5 h-3.5" />
             Website
@@ -93,7 +96,7 @@ const CompanyCard = ({ company }) => {
           <span className="text-xs font-poppins text-gray-300">No website</span>
         )}
       </div>
-    </div>
+    </Link>
   );
 };
 
@@ -139,37 +142,37 @@ const Companies = () => {
   }, [companies, search, industry]);
 
   return (
-    <main className="w-full border-b border-[#4242425C]/20">
+    <main className="w-full min-h-[calc(100vh-8rem)] bg-[radial-gradient(circle_at_top_left,rgba(255,214,195,0.35),transparent_40%),linear-gradient(180deg,#FFF9F5_0%,#FFFFFF_30%)] border-b border-[#4242425C]/20">
       {/* Hero */}
-      <section className="w-full bg-[#FFECE3] border-b border-[#4242425C]/20 py-10 px-6">
+      <section className="w-full border-b border-[#4242425C]/20 py-12 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="font-poppins-bold text-[26px] md:text-[32px] text-[#1a1a1a] leading-tight">
+          <h1 className="font-poppins-bold text-[28px] md:text-[36px] text-[#1a1a1a] leading-tight">
             Explore Top Companies
           </h1>
-          <p className="font-poppins text-[14px] text-[#4a4a4a] mt-2 max-w-lg mx-auto">
+          <p className="font-poppins text-[15px] text-[#5a5a5a] mt-3 max-w-lg mx-auto">
             Browse company profiles, see ratings, and discover what makes each employer unique before applying.
           </p>
         </div>
       </section>
 
       {/* Filters */}
-      <section className="sticky top-16 z-10 bg-white border-b border-[#4242425C]/20 px-6 py-3">
+      <section className="sticky top-16 z-10 bg-white/80 backdrop-blur-md border-b border-[#4242425C]/20 px-6 py-4">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row gap-3">
           {/* Search */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search companies…"
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#D3571F]/30 focus:border-[#D3571F]/50"
+              placeholder="Search companies by name, industry, or description..."
+              className="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-200 text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#D3571F]/30 focus:border-[#D3571F]/50 transition-all bg-white"
             />
           </div>
           {/* Industry filter */}
           <select
             value={industry}
             onChange={(e) => setIndustry(e.target.value)}
-            className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-poppins text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#D3571F]/30 focus:border-[#D3571F]/50 bg-white min-w-[160px]"
+            className="px-4 py-3 rounded-2xl border border-gray-200 text-sm font-poppins text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#D3571F]/30 focus:border-[#D3571F]/50 bg-white min-w-[200px] cursor-pointer transition-all"
           >
             <option value="">All Industries</option>
             {industries.map((ind) => (
