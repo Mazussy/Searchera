@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   getPendingCompanies,
   getPendingJobs,
+  getPendingJobById,
   getAllCategories,
   approveCompany,
   rejectCompany,
@@ -89,7 +90,151 @@ const RejectModal = ({ type, item, onConfirm, onClose }) => {
   );
 };
 
-// ── Category Modal ─────────────────────────────────────────────────────────
+// ── Job Details Modal ───────────────────────────────────────────────────────
+const jobTypeLabel = (type) => {
+  const map = { 0: "Full-time", 1: "Part-time", 2: "Contract", 3: "Internship", 4: "Remote" };
+  return map[type] ?? `Type ${type}`;
+};
+
+const JobDetailsModal = ({ jobId, fallback, onClose, onApprove, onReject, actionLoading }) => {
+  const [job, setJob] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError(false);
+    getPendingJobById(jobId)
+      .then((data) => { if (active) setJob(data); })
+      .catch(() => { if (active) setError(true); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [jobId]);
+
+  const data = job ?? fallback ?? {};
+  const isLoading = actionLoading === jobId;
+
+  const stats = [
+    data.location && { icon: "📍", label: "Location", value: data.location },
+    data.salaryRange && { icon: "💰", label: "Salary", value: data.salaryRange },
+    data.jobType !== undefined && { icon: "⏱", label: "Type", value: jobTypeLabel(data.jobType) },
+    data.deadline && { icon: "📅", label: "Deadline", value: new Date(data.deadline).toLocaleDateString() },
+    data.categoryName && { icon: "🏷️", label: "Category", value: data.categoryName },
+    data.companyName && { icon: "🏢", label: "Company", value: data.companyName },
+  ].filter(Boolean);
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[85vh] flex flex-col animate-fade-in overflow-hidden">
+
+        {/* Header */}
+        <div className="flex items-start gap-4 px-6 py-5 border-b border-[#4242425C]/10 flex-shrink-0">
+          <div className="w-11 h-11 rounded-xl bg-[#FFECE3] flex items-center justify-center text-xl flex-shrink-0">💼</div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-poppins-semibold text-[#1a1a1a] text-base break-words">{data.title ?? "Job details"}</h3>
+              <Badge color="orange">Pending</Badge>
+            </div>
+            {data.companyName && (
+              <p className="text-xs text-gray-400 font-poppins mt-0.5 truncate">{data.companyName}</p>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors text-base leading-none"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-5 overflow-y-auto flex-1 space-y-5">
+          {loading && (
+            <div className="py-10 text-center text-sm font-poppins text-gray-400">Loading details…</div>
+          )}
+
+          {!loading && error && (
+            <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm font-poppins text-red-500">
+              Couldn't load full details. Showing what's available.
+            </div>
+          )}
+
+          {!loading && (
+            <>
+              {stats.length > 0 && (
+                <div className="grid grid-cols-2 gap-3">
+                  {stats.map((stat, i) => (
+                    <div key={i} className="rounded-xl bg-[#F9F6F3] px-3.5 py-2.5 min-w-0">
+                      <p className="text-[10px] uppercase tracking-wide text-gray-400 font-poppins-medium">{stat.label}</p>
+                      <p className="text-sm font-poppins-medium text-[#1a1a1a] mt-0.5 break-words">
+                        {stat.icon} {stat.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {data.summary && (
+                <div>
+                  <p className="text-xs font-poppins-semibold text-gray-500 mb-1.5">Summary</p>
+                  <p className="text-sm font-poppins text-gray-700 leading-relaxed whitespace-pre-line break-words">{data.summary}</p>
+                </div>
+              )}
+
+              {data.description && (
+                <div>
+                  <p className="text-xs font-poppins-semibold text-gray-500 mb-1.5">Description</p>
+                  <p className="text-sm font-poppins text-gray-700 leading-relaxed whitespace-pre-line break-words">{data.description}</p>
+                </div>
+              )}
+
+              {Array.isArray(data.skills) && data.skills.length > 0 && (
+                <div>
+                  <p className="text-xs font-poppins-semibold text-gray-500 mb-1.5">Skills</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {data.skills.map((skill, i) => (
+                      <Badge key={skill.id ?? skill.skillId ?? i} color="gray">
+                        {skill.skillName ?? skill.name ?? skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex gap-3 px-6 py-4 border-t border-[#4242425C]/10 flex-shrink-0">
+          <button
+            disabled={isLoading}
+            onClick={onClose}
+            className="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-poppins-medium text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            Close
+          </button>
+          <button
+            disabled={isLoading}
+            onClick={() => onReject()}
+            className="flex-1 rounded-xl bg-red-100 hover:bg-red-500 hover:text-white text-red-500 py-2.5 text-sm font-poppins-medium transition-colors disabled:opacity-50"
+          >
+            Reject
+          </button>
+          <button
+            disabled={isLoading}
+            onClick={() => onApprove()}
+            className="flex-1 rounded-xl bg-green-500 hover:bg-green-600 text-white py-2.5 text-sm font-poppins-medium transition-colors disabled:opacity-50"
+          >
+            {isLoading ? "…" : "Approve"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 const CategoryModal = ({ category, onConfirm, onClose }) => {
   const [name, setName] = useState(
     category?.categoryName ?? category?.CategoryName ?? "",
@@ -172,6 +317,7 @@ const AdminDashboard = () => {
   const [actionLoading, setActionLoading] = useState(null);
   const [toast, setToast] = useState(null);
   const [rejectModal, setRejectModal] = useState(null); // { type, id, name }
+  const [jobDetailsModal, setJobDetailsModal] = useState(null); // { id, fallback }
   const [categoryModal, setCategoryModal] = useState(null); // null | { category? }
   const [skillModal, setSkillModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -506,9 +652,13 @@ const AdminDashboard = () => {
                         return (
                           <div key={id} className="bg-white border border-[#4242425C]/20 rounded-2xl p-5 hover:shadow-sm transition-all">
                             <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1 min-w-0">
+                              <button
+                                type="button"
+                                onClick={() => setJobDetailsModal({ id, fallback: job })}
+                                className="flex-1 min-w-0 text-left"
+                              >
                                 <div className="flex flex-wrap items-center gap-2 mb-1">
-                                  <h3 className="font-poppins-semibold text-[#1a1a1a] text-sm">{job.title ?? "Untitled"}</h3>
+                                  <h3 className="font-poppins-semibold text-[#1a1a1a] text-sm hover:text-[#D3571F] transition-colors">{job.title ?? "Untitled"}</h3>
                                   <Badge color="orange">Pending</Badge>
                                 </div>
                                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-poppins text-gray-500 mt-1">
@@ -520,8 +670,15 @@ const AdminDashboard = () => {
                                 {job.summary && (
                                   <p className="text-xs text-gray-600 font-poppins mt-2 line-clamp-2">{job.summary}</p>
                                 )}
-                              </div>
+                              </button>
                               <div className="flex gap-2 flex-shrink-0">
+                                <button
+                                  disabled={isLoading}
+                                  onClick={() => setJobDetailsModal({ id, fallback: job })}
+                                  className="px-4 py-2 bg-[#FFECE3] hover:bg-[#FFDCC8] text-[#D3571F] text-xs font-poppins-medium rounded-xl transition-colors disabled:opacity-50"
+                                >
+                                  View Details
+                                </button>
                                 <button
                                   disabled={isLoading}
                                   onClick={() => handleApproveJob(id)}
@@ -712,6 +869,25 @@ const AdminDashboard = () => {
           <span>{toast.type === "error" ? "✕" : "✓"}</span>
           {toast.message}
         </div>
+      )}
+
+      {/* ── Job Details Modal ── */}
+      {jobDetailsModal && (
+        <JobDetailsModal
+          jobId={jobDetailsModal.id}
+          fallback={jobDetailsModal.fallback}
+          actionLoading={actionLoading}
+          onClose={() => setJobDetailsModal(null)}
+          onApprove={() => {
+            handleApproveJob(jobDetailsModal.id);
+            setJobDetailsModal(null);
+          }}
+          onReject={() => {
+            const name = jobDetailsModal.fallback?.title ?? "this job";
+            setRejectModal({ type: "Job", id: jobDetailsModal.id, name });
+            setJobDetailsModal(null);
+          }}
+        />
       )}
 
       {/* ── Reject Modal ── */}
