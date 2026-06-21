@@ -125,3 +125,51 @@ export const getAllCompanies = async () => {
   const { data } = await apiClient.get("/api/Company/GetAllCompanies");
   return extractCollection(data);
 };
+
+// ── Users Management ────────────────────────────────────────────────────────
+export const getAllUsers = async () => {
+  const { data } = await apiClient.get("/api/Admin/GetAllUsers");
+  return extractCollection(data);
+};
+
+export const lockUnlockUser = async (id) => {
+  const { data } = await apiClient.put(`/api/Admin/LockUnLockUser/${id}`);
+  return data;
+};
+
+export const getAdminDashboardStats = async () => {
+  const { data } = await apiClient.get("/api/Admin/DashBoard");
+  return data?.data ?? data?.result ?? data;
+};
+
+export const getAllEmployers = async () => {
+  const { data } = await apiClient.get("/api/Admin/GetAllEmployer");
+  return extractCollection(data);
+};
+
+export const getAllJobSeekers = async () => {
+  const { data } = await apiClient.get("/api/Admin/GetAllJobSeekers");
+  return extractCollection(data);
+};
+
+export const registerAdmin = async (payload) => {
+  const { data } = await apiClient.post("/api/Admin/RegisterAdmin", payload);
+  return data;
+};
+
+// ── Analytics ────────────────────────────────────────────────────────────────
+export const getEmploymentRate = async () => {
+  const { data } = await apiClient.get("/api/AnalysisForAdminDashboard/GetEmploymentRate");
+  return data?.data ?? data?.result ?? data;
+};
+
+export const getApplicationsDistribution = async () => {
+  const { data } = await apiClient.get("/api/AnalysisForAdminDashboard/GetApplicationsDistribution");
+  return data?.data ?? data?.result ?? data;
+};
+
+export const getTopSkills = async () => {
+  const { data } = await apiClient.get("/api/AnalysisForAdminDashboard/GetTopSkills");
+  return data?.data ?? data?.result ?? data;
+};
+

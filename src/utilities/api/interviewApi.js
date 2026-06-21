@@ -155,3 +155,8 @@ export const getApplicationById = async (applicationId) => {
     null
   );
 };
+
+export const getInsight = async (jobId) => {
+  const { data } = await apiClient.post(INTERVIEW_ENDPOINTS.getInsight(jobId));
+  return extractItem(data);
+};

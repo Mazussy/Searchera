@@ -5,4 +5,5 @@ export const INTERVIEW_ENDPOINTS = {
   submitAnswer: "/api/ApplyJob/SubmitAnswer",
   result: (sessionId) => `/api/ApplyJob/Result/${sessionId}`,
   allApplications: "/api/ApplyJob/AllApplications",
+  getInsight: (jobId) => `/api/ApplyJob/GetInsight/${jobId}`,
 };

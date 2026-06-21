@@ -1,7 +1,7 @@
 import { Star, ChevronDown, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { submitApplication } from "../../utilities/api/interviewApi";
+import { submitApplication, getInsight } from "../../utilities/api/interviewApi";
 import { useApplications } from "../../contexts/ApplicationContext";
 
 const JobDetails = ({ job }) => {
@@ -11,6 +11,15 @@ const JobDetails = ({ job }) => {
   const [applyError, setApplyError] = useState("");
   const [existingApplication, setExistingApplication] = useState(null);
   const navigate = useNavigate();
+
+  const [isLoadingInsight, setIsLoadingInsight] = useState(false);
+  const [insightResult, setInsightResult] = useState(null);
+  const [insightError, setInsightError] = useState("");
+
+  useEffect(() => {
+    setInsightResult(null);
+    setInsightError("");
+  }, [job?.id]);
 
   const previewParagraphs = job.description.slice(0, 3);
   const hiddenParagraphs = job.description.slice(3);
@@ -148,6 +157,44 @@ const JobDetails = ({ job }) => {
     }
   };
 
+  const handleGetInsight = async () => {
+    if (!job?.id) {
+      setInsightError("Invalid job reference.");
+      return;
+    }
+
+    if (!localStorage.getItem("token")) {
+      navigate("/login");
+      return;
+    }
+
+    setIsLoadingInsight(true);
+    setInsightError("");
+    setInsightResult(null);
+
+    try {
+      const res = await getInsight(job.id);
+      let text = "";
+      if (typeof res === "string") {
+        text = res;
+      } else if (res && typeof res === "object") {
+        text = res.insight ?? res.insights ?? res.result ?? res.matchingResult ?? res.description ?? res.message ?? JSON.stringify(res);
+      } else {
+        text = "No match insights were returned from the server.";
+      }
+      setInsightResult(text);
+    } catch (err) {
+      setInsightError(
+        err.response?.data?.message ||
+        err.response?.data?.title ||
+        err.message ||
+        "Failed to load insights."
+      );
+    } finally {
+      setIsLoadingInsight(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <section className="overflow-hidden rounded-2xl border border-[#DADADA] bg-white">
@@ -247,9 +294,24 @@ const JobDetails = ({ job }) => {
               Use AI to find out how well the skills on your resume fit this job
               description.
             </p>
-            <button className="mt-3 rounded-md bg-[#E06E39] px-3 py-1.5 text-xs text-white transition-colors hover:bg-[#CC5F2D]">
-              Get insights
-            </button>
+            {insightError && (
+              <p className="mt-2 text-xs text-red-500">{insightError}</p>
+            )}
+            {insightResult ? (
+              <div className="mt-4 rounded-xl bg-white border border-[#E7D9D0] p-4 text-sm font-poppins text-gray-700 leading-relaxed whitespace-pre-line shadow-sm">
+                <h4 className="font-poppins-semibold text-[#E26F3A] mb-2 text-xs uppercase tracking-wide">AI Match Insights</h4>
+                {insightResult}
+              </div>
+            ) : (
+              <button
+                onClick={handleGetInsight}
+                disabled={isLoadingInsight}
+                className="mt-3 rounded-md bg-[#E06E39] px-3 py-1.5 text-xs text-white transition-colors hover:bg-[#CC5F2D] disabled:opacity-50 flex items-center gap-2"
+              >
+                {isLoadingInsight && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                {isLoadingInsight ? "Analyzing resume..." : "Get insights"}
+              </button>
+            )}
           </div>
         )}
       </section>

@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import LandingImageOne from "../../assets/images/Landing1.png";
 import LandingImageTwo from "../../assets/images/Landing2.png";
 import SuitcaseIcon from "../../assets/icons/suitcase.png";
@@ -10,6 +11,15 @@ import JourneyStepTwoIcon from "../../assets/icons/2.png";
 import JourneyStepThreeIcon from "../../assets/icons/3.png";
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const userRole = localStorage.getItem("userType") || localStorage.getItem("role");
+    if (userRole && String(userRole).toLowerCase() === "admin") {
+      navigate("/admin", { replace: true });
+    }
+  }, [navigate]);
+
   return (
     <>
       <div className="hidden md:flex w-full justify-evenly items-center border-b border-b-[#4242425C]/36">

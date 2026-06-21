@@ -41,6 +41,7 @@ const persistUserRole = (responseData) => {
   if (userType) {
     localStorage.setItem("userType", String(userType));
     localStorage.setItem("role", String(userType));
+    localStorage.setItem("isAdmin", String(String(userType).toLowerCase() === "admin"));
   }
 };
 
@@ -78,8 +79,13 @@ const LoginPage = () => {
         persistUserRole(data);
       }
 
-      // Redirect to jobs page
-      window.location.href = "/jobs";
+      // Redirect based on role
+      const userRole = localStorage.getItem("userType") || localStorage.getItem("role");
+      if (userRole && String(userRole).toLowerCase() === "admin") {
+        window.location.href = "/admin";
+      } else {
+        window.location.href = "/jobs";
+      }
     } catch (err) {
       setError(err.response?.data?.message || err.message || "Login failed");
     } finally {
