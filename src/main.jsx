@@ -20,6 +20,7 @@ import InterviewDisclaimerPage from "./components/pages/InterviewDisclaimerPage.
 import ApplicationDetailsPage from "./components/pages/ApplicationDetailsPage.jsx";
 import EmployerApplicationsPage from "./components/pages/EmployerApplicationsPage.jsx";
 import EmployerApplicationReviewPage from "./components/pages/EmployerApplicationReviewPage.jsx";
+import EmailConfirmedPage from "./components/pages/EmailConfirmedPage.jsx";
 import RequireAuth from "./components/common/RequireAuth.jsx";
 import RequireEmployer from "./components/common/RequireEmployer.jsx";
 import "./index.css";
@@ -77,6 +78,10 @@ const router = createBrowserRouter([
           {
             path: "interview-results/:sessionId",
             element: <InterviewResultsPage />,
+          },
+          {
+            path: "email-confirmed",
+            element: <EmailConfirmedPage />,
           },
         ],
       },
