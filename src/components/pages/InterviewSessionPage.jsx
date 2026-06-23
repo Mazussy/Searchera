@@ -18,6 +18,14 @@ const isValidQuestion = (question) =>
       !question.isCompleted,
   );
 
+const isInterviewResultPayload = (payload) => {
+  const result = normalizeInterviewResult(payload);
+  return Boolean(
+    result.sessionId &&
+      (result.status || result.score !== null || result.summary || result.feedback || result.recommendation),
+  );
+};
+
 const InterviewSessionPage = () => {
   const { applicationId } = useParams();
   const location = useLocation();
@@ -308,7 +316,8 @@ const InterviewSessionPage = () => {
     setPasteMessage("");
 
     try {
-      await submitInterviewAnswer({
+      const answerPayload = await submitInterviewAnswer({
+        sessionId,
         questionId: currentQuestion.questionId,
         responseText: "",
       });
@@ -322,6 +331,33 @@ const InterviewSessionPage = () => {
       ]);
 
       setCurrentQuestion(null);
+
+      const nextQuestion = normalizeInterviewQuestion(
+        answerPayload?.question ??
+          answerPayload?.currentQuestion ??
+          answerPayload?.nextQuestion ??
+          answerPayload,
+      );
+
+      if (isValidQuestion(nextQuestion)) {
+        setCurrentQuestion(nextQuestion);
+        setAnswer("");
+        setSecondsRemaining(300);
+        pushAssistantMessage(nextQuestion);
+        return;
+      }
+
+      if (answerPayload?.result) {
+        navigate(`/interview-results/${sessionId}`, {
+          state: {
+            ...applicationMeta,
+            sessionId,
+            result: normalizeInterviewResult(answerPayload.result),
+          },
+        });
+        return;
+      }
+
       await loadNextQuestion(sessionId);
     } catch (err) {
       setError(
@@ -333,7 +369,7 @@ const InterviewSessionPage = () => {
     } finally {
       setSubmitting(false);
     }
-  }, [currentQuestion?.questionId, isTerminated, loadNextQuestion, loading, sessionId, submitting]);
+  }, [applicationMeta, currentQuestion?.questionId, isTerminated, loadNextQuestion, loading, navigate, pushAssistantMessage, sessionId, submitting]);
 
   useEffect(() => {
     if (secondsRemaining === 0) {
@@ -354,7 +390,8 @@ const InterviewSessionPage = () => {
     setError("");
 
     try {
-      await submitInterviewAnswer({
+      const answerPayload = await submitInterviewAnswer({
+        sessionId,
         questionId: currentQuestion.questionId,
         responseText: trimmedAnswer,
       });
@@ -368,6 +405,33 @@ const InterviewSessionPage = () => {
       ]);
 
       setCurrentQuestion(null);
+
+      const nextQuestion = normalizeInterviewQuestion(
+        answerPayload?.question ??
+          answerPayload?.currentQuestion ??
+          answerPayload?.nextQuestion ??
+          answerPayload,
+      );
+
+      if (isValidQuestion(nextQuestion)) {
+        setCurrentQuestion(nextQuestion);
+        setAnswer("");
+        setSecondsRemaining(300);
+        pushAssistantMessage(nextQuestion);
+        return;
+      }
+
+      if (answerPayload?.result) {
+        navigate(`/interview-results/${sessionId}`, {
+          state: {
+            ...applicationMeta,
+            sessionId,
+            result: normalizeInterviewResult(answerPayload.result),
+          },
+        });
+        return;
+      }
+
       await loadNextQuestion(sessionId);
     } catch (err) {
       setError(
