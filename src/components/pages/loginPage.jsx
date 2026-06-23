@@ -185,7 +185,7 @@ const LoginPage = () => {
                 onChange={handleChange}
                 className="h-4 w-4"
               />
-              <span className="text-xs text-primary">Remember for 30 days</span>
+              <span className="text-xs text-primary">Remember me</span>
             </div>
 
             {/* Login button */}

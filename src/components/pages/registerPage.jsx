@@ -461,27 +461,29 @@ const RegisterPage = () => {
               </select>
             </FormField>
 
-            {/* Current Status */}
-            <FormField label="Current status">
-              <select
-                name="currentStatus"
-                value={formData.currentStatus}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    currentStatus: Number(e.target.value),
-                  }))
-                }
-                className="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-poppins focus:outline-none focus:ring-2 focus:ring-primary-accent bg-white"
-              >
-                <option value={0}>Open to work</option>
-                <option value={1}>Actively applying</option>
-                <option value={2}>Employed — open to offers</option>
-                <option value={3}>Employed — not looking</option>
-                <option value={4}>Freelancing</option>
-                <option value={5}>Student</option>
-              </select>
-            </FormField>
+            {/* Current Status - only for Job Seekers */}
+            {formData.userType === "JobSeeker" && (
+              <FormField label="Current status">
+                <select
+                  name="currentStatus"
+                  value={formData.currentStatus}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      currentStatus: Number(e.target.value),
+                    }))
+                  }
+                  className="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-poppins focus:outline-none focus:ring-2 focus:ring-primary-accent bg-white"
+                >
+                  <option value={0}>Open to work</option>
+                  <option value={1}>Actively applying</option>
+                  <option value={2}>Employed — open to offers</option>
+                  <option value={3}>Employed — not looking</option>
+                  <option value={4}>Freelancing</option>
+                  <option value={5}>Student</option>
+                </select>
+              </FormField>
+            )}
 
             {/* Terms */}
             <div className="flex items-start gap-2">
