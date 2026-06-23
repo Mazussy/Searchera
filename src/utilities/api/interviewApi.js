@@ -136,6 +136,27 @@ export const getInterviewResult = async (sessionId) => {
   return extractItem(data);
 };
 
+export const acceptApplication = async (applicationId) => {
+  if (!applicationId) {
+    throw new Error("applicationId is required");
+  }
+
+  const { data } = await apiClient.post(INTERVIEW_ENDPOINTS.acceptApplication(applicationId));
+  return data;
+};
+
+export const rejectApplication = async (applicationId, reason = "") => {
+  if (!applicationId) {
+    throw new Error("applicationId is required");
+  }
+
+  const { data } = await apiClient.post(INTERVIEW_ENDPOINTS.rejectApplication(applicationId), null, {
+    params: { reason },
+  });
+
+  return data;
+};
+
 export const getAllApplications = async () => {
   const { data } = await apiClient.get(INTERVIEW_ENDPOINTS.allApplications);
 

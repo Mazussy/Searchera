@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { Loader2, MessageSquareText, Send, Sparkles, ArrowLeft, Bot, ShieldAlert, Timer } from "lucide-react";
 import {
-  getInterviewResult,
   getNextInterviewQuestion,
   normalizeInterviewQuestion,
   normalizeInterviewResult,
@@ -101,14 +100,12 @@ const InterviewSessionPage = () => {
   }, []);
 
   const finishSession = useCallback(
-    async (sid) => {
-      const resultPayload = normalizeInterviewResult(await getInterviewResult(sid));
-
+    (sid, resultPayload = null) => {
       navigate(`/interview-results/${sid}`, {
         state: {
           ...applicationMeta,
           sessionId: sid,
-          result: resultPayload,
+          result: resultPayload || { sessionId: sid, status: "Completed" },
         },
       });
     },
@@ -151,7 +148,7 @@ const InterviewSessionPage = () => {
           return false;
         }
 
-        await finishSession(sid);
+        finishSession(sid);
         return false;
       } finally {
         setQuestionLoading(false);
@@ -347,6 +344,17 @@ const InterviewSessionPage = () => {
         return;
       }
 
+      if (isInterviewResultPayload(answerPayload)) {
+        navigate(`/interview-results/${sessionId}`, {
+          state: {
+            ...applicationMeta,
+            sessionId,
+            result: normalizeInterviewResult(answerPayload),
+          },
+        });
+        return;
+      }
+
       if (answerPayload?.result) {
         navigate(`/interview-results/${sessionId}`, {
           state: {
@@ -418,6 +426,17 @@ const InterviewSessionPage = () => {
         setAnswer("");
         setSecondsRemaining(300);
         pushAssistantMessage(nextQuestion);
+        return;
+      }
+
+      if (isInterviewResultPayload(answerPayload)) {
+        navigate(`/interview-results/${sessionId}`, {
+          state: {
+            ...applicationMeta,
+            sessionId,
+            result: normalizeInterviewResult(answerPayload),
+          },
+        });
         return;
       }
 

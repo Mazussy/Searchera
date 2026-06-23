@@ -32,18 +32,14 @@ const Jobs = () => {
         } else {
           setJobs([]);
           setSelectedJobId(null);
-          setApiMessage(
-            "No jobs available",
-          );
+          setApiMessage("No jobs available.");
         }
       } catch {
         if (!isActive) {
           return;
         }
 
-        setApiMessage(
-          "Could not load jobs from API.",
-        );
+        setApiMessage("Could not load jobs from the API.");
       } finally {
         if (isActive) {
           setIsLoadingJobs(false);
@@ -137,52 +133,91 @@ const Jobs = () => {
     };
   }, [selectedJobId]);
 
+  const resultLabel = filteredJobs.length === 1 ? "role" : "roles";
+
   return (
-    <main className="w-full border-b border-[#4242425C]/20">
-      <section className="mx-auto w-full max-w-340 px-4 pb-8 md:px-8">
-        <SearchBar filters={filters} onFiltersChange={setFilters} />
+    <main className="w-full bg-[#FBFBFB] border-b border-[#4242425C]/20">
+      <section className="mx-auto w-full max-w-340 px-4 pb-10 pt-8 md:px-8">
+        <div className="mb-8 rounded-[2rem] border border-[#E5E5E5] bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-2xl">
+              <p className="mb-2 text-sm uppercase tracking-[0.24em] text-[#7C7C7C]">Job opportunities</p>
+              <h1 className="text-3xl font-poppins-semibold leading-tight text-[#141414] sm:text-4xl">
+                Discover roles that match your next career move.
+              </h1>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-[#6B6B6B] sm:text-base">
+                Browse open positions, compare role highlights, and submit your application with confidence.
+              </p>
+            </div>
+
+            <div className="rounded-[1.75rem] bg-[#F3F6FA] px-5 py-4 text-center">
+              <p className="text-sm font-medium uppercase tracking-[0.18em] text-[#5F5F5F]">Open listings</p>
+              <p className="mt-2 text-3xl font-poppins-semibold text-[#141414]">{jobs.length}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-6 rounded-[1.75rem] border border-[#E5E5E5] bg-white p-4 shadow-sm sm:p-6">
+          <SearchBar filters={filters} onFiltersChange={setFilters} />
+        </div>
 
         {apiMessage && (
-          <p className="mt-3 rounded-lg border border-[#F4D5C7] bg-[#FFF6F2] px-3 py-2 text-sm text-[#A85A35]">
+          <p className="mb-4 rounded-2xl border border-[#F4D5C7] bg-[#FFF6F2] px-4 py-3 text-sm text-[#A85A35]">
             {apiMessage}
           </p>
         )}
 
-        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[340px_minmax(0,1fr)]">
-          <aside className="max-h-none overflow-y-visible pr-0 lg:max-h-[calc(100vh-220px)] lg:overflow-y-auto lg:pr-1">
-            {isLoadingJobs ? (
-              <div className="rounded-xl border border-[#E5E5E5] bg-white p-4 text-sm text-[#6F6F6F]">
-                Loading jobs...
+        <div className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
+          <aside className="space-y-4">
+            <div className="rounded-[1.75rem] border border-[#E5E5E5] bg-white p-4 shadow-sm">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#5F5F5F]">Open roles</p>
+                  <p className="mt-1 text-sm text-[#7A7A7A]">
+                    {filteredJobs.length} {resultLabel} found
+                  </p>
+                </div>
+                <span className="rounded-full bg-[#EEF3FB] px-3 py-1 text-xs font-semibold text-[#3C5AA6]">
+                  {selectedJob ? selectedJob.company : "Search"}
+                </span>
               </div>
-            ) : filteredJobs.length > 0 ? (
-              <div className="divide-y divide-[#E5E5E5]">
-                {filteredJobs.map((job) => (
-                  <JobCard
-                    key={job.id}
-                    job={job}
-                    isSelected={job.id === selectedJob?.id}
-                    onClick={() => setSelectedJobId(job.id)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-xl border border-[#E5E5E5] bg-white p-4 text-sm text-[#6F6F6F]">
-                No jobs found. Try a different keyword or location.
-              </div>
-            )}
+              {isLoadingJobs ? (
+                <div className="rounded-2xl border border-[#E5E5E5] bg-[#FAFAFA] p-5 text-sm text-[#6F6F6F]">
+                  Loading jobs...
+                </div>
+              ) : filteredJobs.length > 0 ? (
+                <div className="divide-y divide-[#E5E5E5]">
+                  {filteredJobs.map((job) => (
+                    <JobCard
+                      key={job.id}
+                      job={job}
+                      isSelected={job.id === selectedJob?.id}
+                      onClick={() => setSelectedJobId(job.id)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-[#E5E5E5] bg-[#FAFAFA] p-6 text-sm text-[#6F6F6F]">
+                  No jobs match your current search. Update your filters or try a broader keyword.
+                </div>
+              )}
+            </div>
           </aside>
 
-          <section>
+          <section className="space-y-4">
             {selectedJob ? (
-              <>
+              <div className="rounded-[1.75rem] border border-[#E5E5E5] bg-white p-6 shadow-sm">
                 {isLoadingDetails && (
-                  <p className="mb-2 text-sm text-[#7A7A7A]">Loading job details...</p>
+                  <p className="mb-4 text-sm text-[#7A7A7A]">Refreshing job details...</p>
                 )}
                 <JobDetails job={selectedJob} />
-              </>
+              </div>
             ) : (
-              <div className="rounded-2xl border border-[#E5E5E5] bg-white p-6 text-[#6F6F6F]">
-                Select a job from the list to view details.
+              <div className="rounded-[1.75rem] border border-[#E5E5E5] bg-white p-8 text-[#6F6F6F] shadow-sm">
+                <p className="text-base font-semibold text-[#141414]">Select a role to view the full description.</p>
+                <p className="mt-2 text-sm leading-6 text-[#7A7A7A]">
+                  Browse the list of positions and choose a card to see responsibilities, benefits, and the interview path.
+                </p>
               </div>
             )}
           </section>

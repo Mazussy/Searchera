@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2, UserCheck, ClipboardList, Sparkles } from "lucide-react";
+import RejectModal from "../../components/common/RejectModal";
 import {
   getApplicationById,
   getInterviewResult,
   normalizeApplication,
   normalizeInterviewResult,
+  acceptApplication,
+  rejectApplication,
 } from "../../utilities/api/interviewApi";
+import { useNavigate } from "react-router-dom";
 
 const EmployerApplicationReviewPage = () => {
   const { applicationId } = useParams();
@@ -18,6 +22,8 @@ const EmployerApplicationReviewPage = () => {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const navigate = useNavigate();
 
   const sessionId = useMemo(
     () => application?.sessionId || location.state?.application?.sessionId || null,
@@ -53,13 +59,20 @@ const EmployerApplicationReviewPage = () => {
 
         const sid = resolvedApplication.sessionId;
         if (sid) {
-          const resultPayload = await getInterviewResult(sid);
+          try {
+            const resultPayload = await getInterviewResult(sid);
 
-          if (!mounted) {
-            return;
+            if (!mounted) {
+              return;
+            }
+
+            setResult(normalizeInterviewResult(resultPayload));
+          } catch (resultErr) {
+            // Result endpoint may not be available; continue without it
+            if (mounted) {
+              setResult(null);
+            }
           }
-
-          setResult(normalizeInterviewResult(resultPayload));
         }
       } catch (err) {
         if (!mounted) {
@@ -85,6 +98,32 @@ const EmployerApplicationReviewPage = () => {
       mounted = false;
     };
   }, [application, applicationId]);
+
+  const handleAccept = async () => {
+    try {
+      setLoading(true);
+      await acceptApplication(application.applicationId || application.id);
+      // navigate back with optimistic update
+      navigate("/employer/applications", { state: { updatedApplication: { ...(application.raw ?? application), status: "Accepted" } } });
+    } catch (err) {
+      window.alert("Failed to accept application.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRejectConfirm = async (reason) => {
+    try {
+      setLoading(true);
+      await rejectApplication(application.applicationId || application.id, reason || "");
+      navigate("/employer/applications", { state: { updatedApplication: { ...(application.raw ?? application), status: "Rejected" } } });
+    } catch (err) {
+      window.alert("Failed to reject application.");
+    } finally {
+      setLoading(false);
+      setRejectOpen(false);
+    }
+  };
 
   return (
     <main className="min-h-[calc(100vh-8rem)] bg-[radial-gradient(circle_at_top_left,rgba(255,214,195,0.42),transparent_35%),linear-gradient(180deg,#FFF9F5_0%,#FFFFFF_42%)] px-4 py-10 sm:px-6 lg:px-8">
@@ -156,13 +195,36 @@ const EmployerApplicationReviewPage = () => {
             )}
 
             <div className="pt-2">
-              <Link
-                to="/employer/applications"
-                className="rounded-xl bg-[#7A3E1D] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
-              >
-                Back to review queue
-              </Link>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleAccept}
+                  className="rounded-xl bg-[#7A3E1D] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
+                >
+                  Accept
+                </button>
+
+                <button
+                  onClick={() => setRejectOpen(true)}
+                  className="rounded-xl border border-[#E6B8B8] bg-white px-5 py-3 text-sm font-medium text-[#C23A2B] transition hover:bg-[#FFF6F1]"
+                >
+                  Reject
+                </button>
+
+                <Link
+                  to="/employer/applications"
+                  className="ml-auto rounded-xl px-5 py-3 text-sm font-medium text-[#7A3E1D] transition hover:opacity-90"
+                >
+                  Back to review queue
+                </Link>
+              </div>
             </div>
+            <RejectModal
+              open={rejectOpen}
+              title="Reject Application"
+              itemName={application.jobTitle || application.companyName}
+              onConfirm={handleRejectConfirm}
+              onClose={() => setRejectOpen(false)}
+            />
           </div>
         ) : null}
       </section>

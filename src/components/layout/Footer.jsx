@@ -1,82 +1,49 @@
 import { Link } from "react-router-dom";
-import FB1 from "../../assets/icons/FB1.png";
-import FB2 from "../../assets/icons/FB2.png";
-import Insta1 from "../../assets/icons/Insta1.png";
-import Insta2 from "../../assets/icons/Insta2.png";
-import Tiktok1 from "../../assets/icons/Tiktok1.png";
-import Tiktok2 from "../../assets/icons/Tiktok2.png";
 
 const Footer = () => {
   return (
-    <div className="w-full flex flex-col items-center gap-5 px-4 py-6 sm:flex-row sm:justify-evenly sm:gap-0 sm:px-0 sm:py-5">
-      <div className="flex gap-6 sm:gap-10">
-        <a
-          href="https://facebook.com"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            className="h-9 w-9 sm:h-10 sm:w-10"
-            src={FB1}
-            onMouseEnter={(event) => {
-              event.currentTarget.src = FB2;
-            }}
-            onMouseLeave={(event) => {
-              event.currentTarget.src = FB1;
-            }}
-            alt="Facebook"
-          ></img>
-        </a>
-        <a
-          href="https://instagram.com"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            className="h-9 w-9 sm:h-10 sm:w-10"
-            src={Insta1}
-            onMouseEnter={(event) => {
-              event.currentTarget.src = Insta2;
-            }}
-            onMouseLeave={(event) => {
-              event.currentTarget.src = Insta1;
-            }}
-            alt="Instagram"
-          ></img>
-        </a>
-        <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer">
-          <img
-            className="h-9 w-9 sm:h-10 sm:w-10"
-            src={Tiktok1}
-            onMouseEnter={(event) => {
-              event.currentTarget.src = Tiktok2;
-            }}
-            onMouseLeave={(event) => {
-              event.currentTarget.src = Tiktok1;
-            }}
-            alt="TikTok"
-          ></img>
-        </a>
+    <footer className="border-t border-[#E5E5E5] bg-[#F8F9FB] py-12 text-[#4F4F4F]">
+      <div className="mx-auto flex w-full max-w-340 flex-col gap-10 px-4 sm:px-8 lg:flex-row lg:items-start lg:justify-between">
+        <div className="max-w-sm space-y-4">
+          <p className="text-2xl font-poppins-semibold text-[#141414]">SEARCHERA</p>
+          <p className="text-sm leading-6 text-[#6B6B6B]">
+            A polished hiring platform designed for modern companies and talented applicants.
+          </p>
+        </div>
+
+        <div className="grid w-full grid-cols-2 gap-8 sm:w-auto sm:grid-cols-3">
+          <div className="space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#141414]">Company</p>
+            <Link to="about-us" className="block text-sm text-[#5F5F5F] transition hover:text-black">
+              About Us
+            </Link>
+            <Link to="contact-us" className="block text-sm text-[#5F5F5F] transition hover:text-black">
+              Contact
+            </Link>
+          </div>
+
+          <div className="space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#141414]">Explore</p>
+            <Link to="/jobs" className="block text-sm text-[#5F5F5F] transition hover:text-black">
+              Browse jobs
+            </Link>
+            <Link to="/profile" className="block text-sm text-[#5F5F5F] transition hover:text-black">
+              My profile
+            </Link>
+          </div>
+
+          <div className="space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#141414]">Support</p>
+            <p className="text-sm text-[#5F5F5F]">Privacy Policy</p>
+          </div>
+        </div>
       </div>
-      <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 sm:flex-nowrap sm:justify-start sm:gap-10">
-        <p className="font-alatsi text-primary text-[17px] hover:text-[#FF996C] transition-colors">
-          SEARCHERA
-        </p>
-        <Link
-          to={"about-us"}
-          className="font-alatsi text-primary text-[17px] hover:text-[#FF996C] transition-colors"
-        >
-          About Us
-        </Link>
-        <Link
-          to={"contact-us"}
-          className="font-alatsi text-primary text-[17px] hover:text-[#FF996C] transition-colors"
-        >
-          {" "}
-          Contact Us
-        </Link>
+
+      <div className="mt-10 border-t border-[#E5E5E5] pt-6 text-center text-sm text-[#7A7A7A]">
+        © 2026 SEARCHERA. Crafted for a cleaner hiring journey.
       </div>
-    </div>
+    </footer>
   );
 };
+
 export default Footer;

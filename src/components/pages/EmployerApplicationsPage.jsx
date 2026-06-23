@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Loader2, Users, ArrowRight } from "lucide-react";
 import { getAllApplications } from "../../utilities/api/interviewApi";
 
@@ -7,6 +7,7 @@ const EmployerApplicationsPage = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const location = useLocation();
 
   useEffect(() => {
     let mounted = true;
@@ -22,7 +23,21 @@ const EmployerApplicationsPage = () => {
           return;
         }
 
-        setApplications(data);
+        // Merge any optimistic update passed via navigation state
+        const updatedFromNav = location.state?.updatedApplication ?? null;
+        if (updatedFromNav) {
+          const merged = data.map((a) => {
+            const id = String(a.applicationId || a.id || "");
+            const updatedId = String(updatedFromNav.applicationId || updatedFromNav.id || "");
+            if (id && id === updatedId) {
+              return { ...a, ...updatedFromNav };
+            }
+            return a;
+          });
+          setApplications(merged);
+        } else {
+          setApplications(data);
+        }
       } catch (err) {
         if (!mounted) {
           return;
@@ -42,11 +57,9 @@ const EmployerApplicationsPage = () => {
     };
 
     loadApplications();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    // Clear navigation state after consuming it
+    return () => { mounted = false; };
+  }, [location.state]);
 
   const sortedApplications = useMemo(
     () =>

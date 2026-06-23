@@ -131,13 +131,6 @@ function Navbar() {
         "Browse company profiles, see ratings and workplace insights, and learn what makes each employer unique before applying.",
     },
     {
-      id: "career-advice",
-      label: "Career Advice",
-      title: "Get Your Career Advice",
-      description:
-        "Access expert tips on resumes, interviews, career growth, and job search strategies to help you succeed at every step.",
-    },
-    {
       id: "employers",
       label: "For Employers",
       title: "Post Jobs & Hire Talent",
@@ -348,6 +341,27 @@ function Navbar() {
                 </div>
               </div>
             ))}
+            {/* Employee / Employer quick links */}
+            {isLoggedIn && !isEmployer && (
+              <div className="relative">
+                <Link
+                  to="/applications"
+                  className="text-primary text-[20px] font-avro font-normal cursor-pointer transition-colors hover:text-secondary-accent"
+                >
+                  My Applications
+                </Link>
+              </div>
+            )}
+            {isLoggedIn && isEmployer && (
+              <div className="relative">
+                <Link
+                  to="/employer/applications"
+                  className="text-primary text-[20px] font-avro font-normal cursor-pointer transition-colors hover:text-secondary-accent"
+                >
+                  Employee Reviews
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Login/Logout Button */}
@@ -476,22 +490,6 @@ function Navbar() {
                     >
                       Profile
                     </Link>
-                    <Link
-                      to="/applications"
-                      onClick={() => setIsProfileMenuOpen(false)}
-                      className="mt-1 flex w-full items-center rounded-xl px-3 py-2 text-sm font-poppins-medium text-[#1A1A1A] transition-colors hover:bg-[#FFF3ED] hover:text-primary-accent"
-                    >
-                      My Applications
-                    </Link>
-                    {isEmployer && (
-                      <Link
-                        to="/employer/applications"
-                        onClick={() => setIsProfileMenuOpen(false)}
-                        className="mt-1 flex w-full items-center rounded-xl px-3 py-2 text-sm font-poppins-medium text-[#1A1A1A] transition-colors hover:bg-[#FFF3ED] hover:text-primary-accent"
-                      >
-                        Employer Reviews
-                      </Link>
-                    )}
                     {isAdmin && (
                       <Link
                         to="/admin"
@@ -592,12 +590,7 @@ function Navbar() {
             >
               Companies
             </a>
-            <a
-              href="/career-advice"
-              className="block text-primary hover:text-primary-accent font-medium text-sm py-2 transition-colors duration-200"
-            >
-              Career Advice
-            </a>
+            {/* Career Advice removed per role update */}
             <a
               href="/for-employers"
               className="block text-primary hover:text-primary-accent font-medium text-sm py-2 transition-colors duration-200"
@@ -625,7 +618,7 @@ function Navbar() {
                 href="/employer/applications"
                 className="block text-primary hover:text-primary-accent font-medium text-sm py-2 transition-colors duration-200"
               >
-                Employer Reviews
+                Employee Reviews
               </a>
             )}
             {isLoggedIn && (
