@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const NEW_API_BASE_URL = "https://searchera26-001-site1.gtempurl.com";
+const NEW_API_BASE_URL = "https://searchera435345-001-site1.htempurl.com/";
 
 // During local development use a relative base (`''`) so the Vite dev server
 // can proxy `/api` requests and avoid CORS issues. In production always use
